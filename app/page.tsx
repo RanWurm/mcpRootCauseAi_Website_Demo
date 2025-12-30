@@ -124,7 +124,7 @@ export default function Home() {
         </p>
         <div className="flex justify-center gap-4">
           <a
-            href="https://github.com/yourusername"
+            href="https://github.com/RanWurm"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition-colors"
@@ -132,7 +132,7 @@ export default function Home() {
             GitHub
           </a>
           <a
-            href="https://linkedin.com/in/yourprofile"
+            href="https://www.linkedin.com/in/ranwurmbrand/"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-2 bg-secondary text-white rounded hover:bg-blue-700 transition-colors"
