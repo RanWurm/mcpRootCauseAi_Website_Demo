@@ -21,17 +21,16 @@ export default function Home() {
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">About Me</h2>
         <div className="prose prose-lg text-gray-700">
           <p className="mb-4">
-            I'm a Software Engineer Intern at Red Hat, working on the Konveyor AI (Kai) team, 
-            focusing on editor-extensions for AI-assisted application modernization. 
-            I develop test automation infrastructure, MCP client authentication systems, 
-            and solution server connectivity.
+            I'm a Software Engineer Intern at Red Hat. I started on Konveyor AI (Kai/MTA), where Kai uses AI to modernize and migrate legacy Java applications. 
+            I'm now an AI Developer on MTC (Migration Toolkit for Containers), 
+            focused on migration workflows on OpenShift-Red Hat's Kubernetes platform.
           </p>
         </div>
       </div>
 
       {/* Projects Grid */}
       <div className="mb-16">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">Featured Work</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">On This Portfolio</h2>
         <div className="grid gap-6 md:grid-cols-2">
           {/* MCP Presentation */}
           <Link
@@ -93,9 +92,21 @@ export default function Home() {
 
       {/* Skills Section */}
       <div className="mb-16">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Core Skills</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Core Skills Presented</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
+            'Multi-Agent AI System',
+            'LLM Orchestration',
+            'Autonomous Code Analysis',
+            'Real-time Log Parsing',
+            'Git Version Control Automation',
+            'Telegram Bot Integration',
+            'AST-based Code Extraction',
+            'Context-Aware Debugging',
+            'Interactive User Feedback Loop',
+            'Test Automation (Vitest/Jest)',
+            'Dynamic Tool Invocation',
+            'Artifact Management',
             'Test Automation',
             'TypeScript/JavaScript',
             'React & React Native',
@@ -118,9 +129,9 @@ export default function Home() {
 
       {/* Contact Section */}
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Get in Touch</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Full Code And Documents</h2>
         <p className="text-gray-600 mb-4">
-          Interested in discussing quality engineering, test automation, or AI-assisted development?
+          You can Find The Source Code Of The Open-Source Code Here 
         </p>
         <div className="flex justify-center gap-4">
           <a
@@ -130,14 +141,6 @@ export default function Home() {
             className="px-6 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition-colors"
           >
             GitHub
-          </a>
-          <a
-            href="https://www.linkedin.com/in/ranwurmbrand/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-2 bg-secondary text-white rounded hover:bg-blue-700 transition-colors"
-          >
-            LinkedIn
           </a>
         </div>
       </div>
