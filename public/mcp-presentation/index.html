@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication Refactoring - Evolution</title>
+    <title>MCP Client Authentication - Complete Story</title>
     <style>
         * {
             margin: 0;
@@ -26,10 +26,12 @@
             width: 100vw;
             height: 100vh;
             display: none;
-            padding: 70px 110px;
+            padding: 35px 55px;
             position: absolute;
             background: white;
             z-index: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .slide.active {
@@ -39,14 +41,14 @@
 
         .version-badge {
             position: absolute;
-            top: 30px;
-            right: 110px;
+            top: 25px;
+            right: 100px;
             background: #2c3e50;
             color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
+            padding: 10px 25px;
+            border-radius: 25px;
             font-weight: 700;
-            font-size: 1.1em;
+            font-size: 1em;
             letter-spacing: 1px;
         }
 
@@ -54,55 +56,61 @@
         .version-badge.v2 { background: #f39c12; }
         .version-badge.v3 { background: #27ae60; }
         .version-badge.transition { background: #9b59b6; }
+        .version-badge.context { background: #3498db; }
 
         .slide-header {
             border-bottom: 3px solid #2c3e50;
-            padding-bottom: 20px;
-            margin-bottom: 35px;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
         }
 
         h1 {
-            font-size: 2.8em;
+            font-size: 2.4em;
             color: #2c3e50;
             font-weight: 600;
         }
 
         h2 {
-            font-size: 2.2em;
+            font-size: 1.9em;
             color: #2c3e50;
             font-weight: 600;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         h3 {
-            font-size: 1.4em;
+            font-size: 1.2em;
             color: #34495e;
             font-weight: 600;
-            margin: 20px 0 12px 0;
+            margin: 12px 0 8px 0;
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #7f8c8d;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         p, li {
-            font-size: 1.05em;
-            line-height: 1.7;
+            font-size: 0.98em;
+            line-height: 1.5;
             color: #2c3e50;
         }
 
         .code-block {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 18px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.88em;
-            line-height: 1.6;
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
             overflow-x: auto;
-            margin: 15px 0;
+            margin: 8px 0;
+            color: #d4d4d4;
+        }
+
+        .code-block pre {
+            margin: 0;
+            white-space: pre;
         }
 
         .highlight-bad {
@@ -118,54 +126,71 @@
         .problem-box {
             background: #fff5f5;
             border-left: 4px solid #e74c3c;
-            padding: 20px;
-            margin: 15px 0;
+            padding: 12px;
+            margin: 8px 0;
         }
 
         .problem-title {
             font-weight: 700;
             color: #c0392b;
-            margin-bottom: 10px;
-            font-size: 1.15em;
+            margin-bottom: 8px;
+            font-size: 1.05em;
         }
 
         .solution-box {
             background: #f0fff4;
             border-left: 4px solid #27ae60;
-            padding: 20px;
-            margin: 15px 0;
+            padding: 12px;
+            margin: 8px 0;
         }
 
         .solution-title {
             font-weight: 700;
             color: #27ae60;
-            margin-bottom: 10px;
-            font-size: 1.15em;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 8px 0;
+        }
+
+        .info-title {
+            font-weight: 700;
+            color: #2980b9;
+            margin-bottom: 8px;
+            font-size: 1.05em;
         }
 
         .interface-box {
             background: #f8f9fa;
             border: 2px solid #dee2e6;
-            padding: 20px;
-            margin: 15px 0;
+            padding: 12px;
+            margin: 8px 0;
             border-radius: 4px;
+            max-width: 100%;
         }
 
         .interface-title {
             font-weight: 700;
             color: #2c3e50;
-            margin-bottom: 12px;
-            font-size: 1.15em;
+            margin-bottom: 10px;
+            font-size: 1.05em;
             font-family: 'Courier New', monospace;
         }
 
         .interface-method {
             font-family: 'Courier New', monospace;
-            font-size: 0.92em;
-            margin: 6px 0;
-            padding: 8px 12px;
+            font-size: 0.78em;
+            margin: 4px 0;
+            padding: 5px 8px;
             background: white;
             border-left: 3px solid #3498db;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .interface-method.removed {
@@ -182,16 +207,37 @@
         .two-column {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin: 20px 0;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 18px 0;
+        }
+
+        .component-card {
+            background: #f8f9fa;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .component-name {
+            font-weight: 700;
+            color: #2980b9;
+            font-size: 1.1em;
+            margin-bottom: 10px;
         }
 
         ul {
-            margin: 15px 0 15px 25px;
+            margin: 8px 0 8px 22px;
         }
 
         li {
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
         .navigation {
@@ -235,7 +281,7 @@
         .metrics-row {
             display: flex;
             justify-content: space-around;
-            margin: 50px 0;
+            margin: 30px 0;
         }
 
         .metric {
@@ -243,7 +289,7 @@
         }
 
         .metric-value {
-            font-size: 2.5em;
+            font-size: 2.2em;
             font-weight: 700;
             color: #2c3e50;
         }
@@ -274,18 +320,22 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
+            font-size: 0.9em;
+            table-layout: fixed;
         }
 
         .comparison-table th {
             background: #2c3e50;
             color: white;
-            padding: 12px;
+            padding: 10px 8px;
             text-align: left;
+            font-size: 0.95em;
         }
 
         .comparison-table td {
-            padding: 12px;
+            padding: 10px 8px;
             border-bottom: 1px solid #dee2e6;
+            word-wrap: break-word;
         }
 
         .comparison-table tr:nth-child(even) {
@@ -294,442 +344,1088 @@
 
         .arrow-down {
             text-align: center;
-            font-size: 3em;
+            font-size: 2.5em;
             color: #9b59b6;
+            margin: 15px 0;
+        }
+
+        .logo-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .logo-item {
+            text-align: center;
+        }
+
+        .logo-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 30px 40px;
+            font-size: 2em;
+            font-weight: 700;
+            color: #e74c3c;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin: 20px 0;
         }
+
+        .flow-box {
+            background: #e8f4f8;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            padding: 15px 20px;
+            flex: 1;
+            margin: 0 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .flow-arrow {
+            font-size: 2em;
+            color: #3498db;
+        }
+
+        .timeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 0;
+        }
+
+        .timeline-item {
+            text-align: center;
+            padding: 15px 25px;
+            border-radius: 8px;
+            min-width: 140px;
+        }
+
+        .timeline-item.initial { background: #ecf0f1; border: 2px solid #95a5a6; }
+        .timeline-item.v1 { background: #fadbd8; border: 2px solid #e74c3c; }
+        .timeline-item.v3 { background: #d5f4e6; border: 2px solid #27ae60; }
+
+        .timeline-arrow {
+            font-size: 2em;
+            color: #7f8c8d;
+            margin: 0 10px;
+        }
+
+        .timeline-label {
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .timeline-desc {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .code-comment { color: #4ad509; }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-type { color: #4ec9b0; }
+        .code-function { color: #dcdcaa; }
+        .code-number { color: #b5cea8; }
+        .code-bad { background: rgba(255, 0, 0, 0.2); display: inline; padding: 1px 3px; border-radius: 3px; }
+        .code-good { background: rgba(0, 255, 0, 0.15); display: inline; padding: 1px 3px; border-radius: 3px; }
+        .code-highlight { background: rgba(255, 255, 0, 0.2); display: inline; padding: 1px 3px; border-radius: 3px; }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 12px 0;
+        }
+
+        .column-header {
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 4px 4px 0 0;
+            text-align: center;
+            font-size: 0.95em;
+        }
+        ol {
+            margin: 6px 0 6px 25px;
+        }
+
     </style>
 </head>
 <body>
     <div class="slides-container">
         
+        <!-- PART 1: CONTEXT & BACKGROUND -->
+        
         <!-- Slide 1: Title -->
         <div class="slide active title-slide">
-            <h1>Authentication System Refactoring</h1>
-            <p class="subtitle">Evolution Through Three Versions</p>
+            <h1>MCP Client Authentication</h1>
+            <p class="subtitle">From Assignment to Production-Ready Implementation</p>
+            <p style="margin-top: 60px; font-size: 1.1em; color: #7f8c8d;">Red Hat - Konveyor AI Team</p>
+        </div>
+        
+        <!-- Slide 2: About Me -->
+        <div class="slide">
+            <div class="version-badge context">CONTEXT</div>
+            <div class="slide-header">
+                <h2>About Me</h2>
+            </div>
+
+            <div class="info-box">
+                <div class="info-title">Background</div>
+                <ul>
+                    <li><strong>Education:</strong> Computer Science student at Bar-Ilan University</li>
+                    <li><strong>Previous Role:</strong> Quality Engineer (QE) at Red Hat</li>
+                    <li><strong>Focus Areas:</strong> Konveyor AI (KAI) & MTA, with emphasis on open-source components</li>
+                    <li><strong>Current Role:</strong> Developer at Migration Toolkit for Containers (MTC)</li>
+                </ul>
+            </div>
+            
+            <h3>Red hat Key Facts</h3>
+            <ul>
+                <li><strong>~25,000 employees</strong> worldwide</li>
+                <li><strong>Independent operation</strong> - maintains autonomy due to open-source focus</li>
+                <li><strong>Core products:</strong> Red Hat Enterprise Linux (RHEL) & OpenShift</li>
+                <li><strong>Open-source leadership</strong> - major contributor to Linux kernel and container orchestration</li>
+            </ul>
+
+            <h3 style="margin-top: 30px;">OpenShift</h3>
+            <p>Enterprise Kubernetes platform that provides:</p>
+            <ul>
+                <li>Container orchestration and management</li>
+                <li>Developer tools and CI/CD pipelines</li>
+                <li>Security, compliance, and multi-cloud support</li>
+                <li>Foundation for modern application development</li>
+            </ul>
+        </div>
+
+
+        <!-- Slide 4: MTA -->
+        <div class="slide">
+            <div class="version-badge context">CONTEXT</div>
+            <div class="slide-header">
+                <h2>Migration Toolkit for Applications (MTA)</h2>
+            </div>
+
+            <h3>The Problem</h3>
+            <p>Organizations have massive legacy Java codebases that need modernization to run on OpenShift</p>
+
+            <div class="flow-diagram" style="margin-top: 40px;">
+                <div class="flow-box" style="background: #fff5f5; border-color: #e74c3c;">
+                    Legacy Java<br/>Application
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box" style="background: #e8f4f8; border-color: #3498db;">
+                    MTA Analysis
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box" style="background: #f0fff4; border-color: #27ae60;">
+                    OpenShift-Ready<br/>Application
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px;">What MTA Does</h3>
+            <div class="two-column">
+                <div>
+                    <div class="solution-box">
+                        <div class="solution-title">✓ Automated Analysis</div>
+                        <p>Static code analysis identifying migration issues</p>
+                    </div>
+                    <div class="solution-box">
+                        <div class="solution-title">✓ Mechanical Replacements</div>
+                        <p>Automatic import changes and simple refactoring</p>
+                    </div>
+                </div>
+                <div>
+                    <div class="problem-box">
+                        <div class="problem-title">⚠ Manual Work Required</div>
+                        <p>API changes and architectural updates still require manual developer intervention</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Konveyor AI (KAI) -->
+        <div class="slide">
+            <div class="version-badge context">CONTEXT</div>
+            <div class="slide-header">
+                <h2>Konveyor AI (KAI)</h2>
+                <p class="subtitle">Eliminating Manual Migration Work</p>
+            </div>
+
+            <h3>The Evolution</h3>
+            <p>KAI leverages AI to automate the manual fixes that MTA couldn't handle</p>
+
+            <div class="info-box" style="margin-top: 30px;">
+                <div class="info-title">How KAI Works</div>
+                <ul>
+                    <li>Analyzes code using the same static analysis as MTA</li>
+                    <li><strong>Multi-agent LLM system</strong> generates code fixes automatically</li>
+                    <li>Handles API migrations that previously required manual intervention</li>
+                    <li><strong>Human-in-the-loop:</strong> developers review and approve changes</li>
+                    <li>Learns from past migrations to improve future suggestions</li>
+                </ul>
+            </div>
+
+            <h3 style="margin-top: 30px;">Impact</h3>
             <div class="metrics-row">
                 <div class="metric">
-                    <div class="metric-value">3</div>
-                    <div class="metric-label">Versions</div>
+                    <div class="metric-value">~90%</div>
+                    <div class="metric-label">Reduction in Manual Work</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-value">5</div>
-                    <div class="metric-label">Critical Bugs Fixed</div>
+                    <div class="metric-value">Complex</div>
+                    <div class="metric-label">Multi-Agent Architecture</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-value">100%</div>
-                    <div class="metric-label">Thread Safe</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">-60%</div>
-                    <div class="metric-label">Network Calls</div>
+                    <div class="metric-value">Banks</div>
+                    <div class="metric-label">Primary Users</div>
                 </div>
             </div>
+
+            <p style="margin-top: 30px; text-align: center; color: #7f8c8d;"><em>Financial institutions with huge legacy codebases. Microsoft has expressed interest in supporting this open-source initiative.</em></p>
         </div>
 
-        <!-- Slide 2: Tech Stack -->
+
+
+   
+        <!-- Slide 6: KAI Architecture Deep Dive -->
         <div class="slide">
+            <div class="version-badge context">ARCHITECTURE</div>
             <div class="slide-header">
-                <h2>Tech Stack & Context</h2>
+                <h2>Konveyor AI (KAI) - System Architecture</h2>
+                <p class="subtitle">Understanding the Complex System</p>
             </div>
 
-            <h3>Project: Konveyor AI - Editor Extensions</h3>
-            <p>MCP (Model Context Protocol) client for AI-assisted application modernization</p>
+            <p style="margin-bottom: 20px;">KAI is a sophisticated multi-component system. Understanding this architecture was critical for implementing the testing infrastructure.</p>
 
-            <div class="tech-stack">
-                <div class="tech-item">TypeScript 5.x</div>
-                <div class="tech-item">Node.js</div>
-                <div class="tech-item">OAuth2</div>
-                <div class="tech-item">MCP Protocol</div>
-                <div class="tech-item">Vitest</div>
-                <div class="tech-item">Zod Validation</div>
-                <div class="tech-item">VS Code Extension</div>
-                <div class="tech-item">Streamable HTTP</div>
+            <div class="component-grid">
+                <div class="component-card">
+                    <div class="component-name">1. Konveyor Analyzer</div>
+                    <p><strong>Open-source static analyzer</strong></p>
+                    <ul style="margin-top: 10px; font-size: 0.95em;">
+                        <li>Analyzes code using rulesets</li>
+                        <li>Built-in rules + custom rules</li>
+                        <li>Identifies migration issues</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-name">2. Rules</div>
+                    <p><strong>Pattern matching definitions</strong></p>
+                    <ul style="margin-top: 10px; font-size: 0.95em;">
+                        <li>Regex-like patterns</li>
+                        <li>Define what to find in code</li>
+                        <li>Specify fix priorities</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-name">3. KAI Core</div>
+                    <p><strong>Multi-agent LLM system</strong></p>
+                    <ul style="margin-top: 10px; font-size: 0.95em;">
+                        <li>Processes analyzer results</li>
+                        <li>Generates code fixes</li>
+                        <li>Manages approval workflow</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-name">4. Editor Extension</div>
+                    <p><strong>VS Code plugin</strong></p>
+                    <ul style="margin-top: 10px; font-size: 0.95em;">
+                        <li>Contains KAI core</li>
+                        <li>Provides codebase access</li>
+                        <li>Connects to Solution Server</li>
+                    </ul>
+                </div>
             </div>
 
-            <h3 style="margin-top: 30px;">Key Requirements</h3>
-            <ul>
-                <li>Handle concurrent AI queries (multiple requests simultaneously)</li>
-                <li>Automatic token refresh before expiration</li>
-                <li>Support both local development and remote OAuth2 servers</li>
-                <li>Seamless reconnection on token changes</li>
-                <li>Zero authentication failures under load</li>
-            </ul>
-
-            <h3 style="margin-top: 25px;">Patterns Used</h3>
-            <ul>
-                <li><strong>Promise Guards</strong> for concurrency protection</li>
-                <li><strong>Separation of Concerns</strong> (Auth ↔ Client)</li>
-                <li><strong>Token Polling</strong> (pull vs callback push)</li>
-                <li><strong>Smart Refresh</strong> (70% of token lifetime)</li>
-            </ul>
+            <div class="component-card" style="margin-top: 20px; border-color: #e74c3c; background: #fff5f5;">
+                <div class="component-name" style="color: #c0392b;">5. Solution Server ← My Focus</div>
+                <p><strong>MCP server deployed on OpenShift</strong></p>
+                <ul style="margin-top: 10px; font-size: 0.95em;">
+                    <li>Stores historical migration data from developers</li>
+                    <li>Analyzes past patterns and solutions</li>
+                    <li>Helps KAI generate better suggestions based on collective knowledge</li>
+                    <li><strong>Uses Model Context Protocol (MCP)</strong> for communication</li>
+                </ul>
+            </div>
         </div>
 
-        <!-- Slide 3: VERSION 1 - Original -->
+     <!-- PART 2: THE ASSIGNMENT & DEEP DIVE -->
+
+        <!-- Slide 7: The Assignment -->
+        <div class="slide">
+            <div class="version-badge context">THE ASSIGNMENT</div>
+            <div class="slide-header">
+                <h2>The Assignment</h2>
+                <p class="subtitle">What I Was Asked to Build</p>
+            </div>
+
+            <h3>Primary Objective</h3>
+            <div class="info-box">
+                <div class="info-title">Automated Testing System</div>
+                <p><strong>Goal:</strong> Verify that the Solution Server returns correct responses and displays them properly in the UI</p>
+            </div>
+
+            <h3>Technical Requirements</h3>
+            <div class="two-column">
+                <div>
+                    <h4 style="color: #3498db; margin-bottom: 15px;">Backend Testing</h4>
+                    <ul>
+                        <li>Test Solution Server responses</li>
+                        <li>Validate data accuracy</li>
+                        <li>Check API contracts</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #3498db; margin-bottom: 15px;">UI Validation</h4>
+                    <ul>
+                        <li>Verify correct data display</li>
+                        <li>Test editor extension integration</li>
+                        <li>End-to-end workflows</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+<!-- Slide 9: Initial Challenges -->
+        <div class="slide">
+            <div class="version-badge context">CHALLENGES</div>
+            <div class="slide-header">
+                <h2>Initial Challenges</h2>
+                <p class="subtitle">Why This Was Difficult</p>
+            </div>
+
+            <div class="problem-box">
+                <div class="problem-title">1. Knowledge Gaps</div>
+                <ul>
+                    <li><strong>MCP Protocol:</strong> No prior experience with Model Context Protocol architecture or communication patterns</li>
+                    <li><strong>KAI Architecture:</strong> Complex multi-component system with unclear boundaries</li>
+                    <li><strong>Missing Documentation:</strong> No organized documentation for KAI or Solution Server internals</li>
+                </ul>
+            </div>
+
+            <div class="problem-box">
+                <div class="problem-title">2. Architectural Confusion</div>
+                <p><strong>Question:</strong> Why is the Solution Server an MCP server?</p>
+                <ul style="margin-top: 10px;">
+                    <li>MCP typically implies AI/LLM integration</li>
+                    <li>But the AI components are in KAI core, not Solution Server</li>
+                    <li>Unclear separation of responsibilities</li>
+                </ul>
+            </div>
+
+            <div class="problem-box">
+                <div class="problem-title">3. Time & Quality Pressure</div>
+                <ul>
+                    <li><strong>Weeks before code freeze</strong> - entire team writing tests</li>
+                    <li>High accuracy requirements - production testing system</li>
+                    <li><strong>Directive:</strong> "Keep it simple, make it work, no major changes"</li>
+                </ul>
+            </div>
+        </div>
+
+<!-- Slide 8: Starting Point -->
+        <div class="slide">
+            <div class="version-badge initial">STARTING POINT</div>
+            <div class="slide-header">
+                <h2>Initial State: MCP Client Without Authentication</h2>
+                <p class="subtitle">What existed before my task</p>
+            </div>
+
+            <div class="file-label">initial-mcp-client.model.ts</div>
+            <div class="code-block">
+<pre><span class="code-keyword">export class</span> <span class="code-type">MCPClient</span> {
+  <span class="code-keyword">private readonly</span> url: <span class="code-type">string</span>;
+  <span class="code-keyword">private</span> transport: <span class="code-type">StreamableHTTPClientTransport</span>;
+  <span class="code-keyword">private</span> client?: <span class="code-type">Client</span>;
+
+  <span class="code-keyword">constructor</span>(url: <span class="code-type">string</span>) {
+    <span class="code-keyword">this</span>.url = url;
+    <span class="code-keyword">this</span>.transport = <span class="code-keyword">new</span> <span class="code-function">StreamableHTTPClientTransport</span>(<span class="code-keyword">new</span> <span class="code-function">URL</span>(<span class="code-keyword">this</span>.url));
+  }
+
+  <span class="code-keyword">public static async</span> <span class="code-function">connect</span>(url: <span class="code-type">string</span>) {
+    <span class="code-keyword">const</span> mcpClient = <span class="code-keyword">new</span> <span class="code-function">MCPClient</span>(url);
+    mcpClient.client = <span class="code-keyword">new</span> <span class="code-function">Client</span>({ name: <span class="code-string">'testing-mcp-client'</span>, ... });
+    <span class="code-keyword">await</span> mcpClient.client.<span class="code-function">connect</span>(mcpClient.transport);
+    <span class="code-keyword">return</span> mcpClient;
+  }
+  
+  <span class="code-comment">// getBestHint(), getSuccessRate(), request() - business logic only</span>
+}</pre>
+            </div>
+
+            <div class="two-column" style="margin-top: 20px;">
+                <div>
+                    <div class="info-box">
+                        <div class="info-title">✓ What It Had</div>
+                        <ul>
+                            <li>Basic MCP protocol connection</li>
+                            <li>Tool calls (getBestHint, getSuccessRate)</li>
+                            <li>Zod schema validation</li>
+                            <li>Error handling for responses</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="problem-box">
+                        <div class="problem-title">✗ What It Lacked</div>
+                        <ul>
+                            <li><strong>No authentication</strong> - couldn't connect to production</li>
+                            <li>No OAuth2/Keycloak integration</li>
+                            <li>No token management</li>
+                            <li>Only worked with unprotected servers</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: The Research Phase -->
+        <div class="slide">
+            <div class="version-badge context">RESEARCH</div>
+            <div class="slide-header">
+                <h2>The Research Phase</h2>
+                <p class="subtitle">Reverse Engineering the System</p>
+            </div>
+
+            <h3>Approach: Learning by Doing</h3>
+            <p>Without clear documentation, I had to reverse-engineer the system to understand it</p>
+
+            <div class="info-box" style="margin-top: 25px;">
+                <div class="info-title">Learning MCP Protocol</div>
+                <ul>
+                    <li>Studied protocol specifications and communication patterns</li>
+                    <li>Analyzed HTTP request/response flows</li>
+                    <li>Examined how server-client handshakes work</li>
+                    <li>Traced authentication and session management</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <div class="info-title">Understanding the Codebase</div>
+                <ul>
+                    <li>Scattered information across multiple large Git repositories</li>
+                    <li>Read existing code to understand patterns and architecture</li>
+                    <li>Traced connections between components</li>
+                    <li><strong>Built mental model incrementally</strong> - didn't know what I was looking for initially</li>
+                </ul>
+            </div>
+
+            <h3 style="margin-top: 30px;">Key Discovery</h3>
+            <div class="solution-box">
+                <div class="solution-title">Authentication via Keycloak</div>
+                <p>Solution Server uses <strong>Keycloak OAuth2</strong> for authentication (not simple JWT as expected)</p>
+                <p style="margin-top: 10px;">→ Required learning Keycloak integration and OAuth2 refresh token flows</p>
+            </div>
+        </div>
+
+        <!-- Slide 11: V1 Implementation -->
         <div class="slide">
             <div class="version-badge v1">VERSION 1</div>
             <div class="slide-header">
-                <h2>Version 1: Original Monolithic Implementation</h2>
+                <h2>First Attempt: Monolithic Authentication</h2>
+                <p class="subtitle">Everything in one class</p>
             </div>
 
-            <h3>Architecture: Everything in MCPClient</h3>
+            <div class="file-label">first-attempt-mcp-client.model.ts</div>
+            <div class="code-block">
+<pre><span class="code-keyword">export class</span> <span class="code-type">MCPClient</span> {
+  <span class="code-keyword">private</span> bearerToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> refreshToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> tokenExpiresAt: <span class="code-type">number</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> refreshTimer: <span class="code-type">NodeJS.Timeout</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+
+  <span class="code-keyword">private async</span> <span class="code-function">initialize</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; {
+    <span class="code-keyword">const</span> isLocal = process.env.SOLUTION_SERVER_LOCAL === <span class="code-string">'true'</span>;
+    
+    <span class="code-keyword">if</span> (isLocal) {
+      <span class="code-keyword">this</span>.bearerToken = process.env.LOCAL_MCP_TOKEN || <span class="code-string">'local-mcp-token'</span>;
+    } <span class="code-keyword">else</span> {
+      <span class="code-keyword">await this</span>.<span class="code-function">authenticateFromEnv</span>();  <span class="code-comment">// Password grant flow</span>
+    }
+    
+    <span class="code-comment">// Create transport with token</span>
+    <span class="code-keyword">const</span> headers = { Authorization: <span class="code-string">`Bearer </span>${<span class="code-keyword">this</span>.bearerToken}<span class="code-string">`</span> };
+    <span class="code-keyword">this</span>.transport = <span class="code-keyword">new</span> <span class="code-function">StreamableHTTPClientTransport</span>(url, { requestInit: { headers } });
+    
+    <span class="code-keyword">if</span> (!isLocal) <span class="code-keyword">this</span>.<span class="code-function">startTokenRefreshTimer</span>();
+  }</pre>
+            </div>
+
+            <h3>Token Refresh Strategy</h3>
+            <div class="code-block">
+<pre><span class="code-keyword">const</span> <span class="code-highlight">TOKEN_EXPIRY_BUFFER_MS = <span class="code-number">30000</span></span>;  <span class="code-comment">// Fixed 30 second buffer</span>
+
+<span class="code-keyword">private async</span> <span class="code-function">authenticateFromEnv</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; {
+  <span class="code-comment">// ... fetch token via password grant ...</span>
+  <span class="code-keyword">this</span>.tokenExpiresAt = Date.<span class="code-function">now</span>() + tokenData.expires_in * <span class="code-number">1000</span> - <span class="code-highlight">TOKEN_EXPIRY_BUFFER_MS</span>;
+}
+
+<span class="code-keyword">private</span> <span class="code-function">startTokenRefreshTimer</span>(): <span class="code-type">void</span> {
+  <span class="code-keyword">const</span> timeUntilRefresh = <span class="code-keyword">this</span>.tokenExpiresAt - Date.<span class="code-function">now</span>();
+  <span class="code-bad"><span class="code-keyword">this</span>.refreshTimer = <span class="code-function">setTimeout</span>(() => <span class="code-keyword">this</span>.<span class="code-function">refreshTokenFlow</span>(), timeUntilRefresh);</span>
+}
+
+<span class="code-keyword">private async</span> <span class="code-function">refreshTokenFlow</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; {
+  <span class="code-comment">// Refresh token, recreate transport, restart timer</span>
+  <span class="code-bad"><span class="code-keyword">await this</span>.client.<span class="code-function">connect</span>(<span class="code-keyword">this</span>.transport);  <span class="code-comment">// Reconnect inline!</span></span>
+  <span class="code-keyword">this</span>.<span class="code-function">startTokenRefreshTimer</span>();
+}</pre>
+            </div>
+
+            <h3 style="margin-top: 15px;">What V1 Achieved</h3>
+            <div class="solution-box" style="padding: 8px; margin: 5px 0;">
+                <ul style="margin: 4px 0 4px 18px;">
+                    <li>✓ OAuth2 password grant authentication</li>
+                    <li>✓ Refresh token support</li>
+                    <li>✓ Automatic timer-based refresh</li>
+                    <li>✓ Local development mode bypass</li>
+                </ul>
+            </div>
+        </div>
+
+
+        <!-- Slide 12: V1 Problems -->
+        <div class="slide">
+            <div class="version-badge v1">VERSION 1 PROBLEMS</div>
+            <div class="slide-header">
+                <h2>Problems Discovered in V1</h2>
+                <p class="subtitle">Issues that emerged during testing</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <div class="problem-box">
+                        <div class="problem-title">1. God Object Anti-Pattern</div>
+                        <p>MCPClient handles <strong>both</strong> MCP protocol AND authentication</p>
+                        <ul style="margin-top: 8px;">
+                            <li>Hard to test auth logic in isolation</li>
+                            <li>Can't reuse auth for other clients</li>
+                            <li>Violates Single Responsibility</li>
+                        </ul>
+                    </div>
+
+                    <div class="problem-box">
+                        <div class="problem-title">2. Fixed Buffer Strategy</div>
+                        <div class="code-block" style="margin: 8px 0;">
+<pre><span class="code-bad">TOKEN_EXPIRY_BUFFER_MS = <span class="code-number">30000</span></span>
+
+<span class="code-comment">// If token lifetime is 60s → refresh at 30s ✓</span>
+<span class="code-comment">// If token lifetime is 300s → still 30s buffer</span>
+<span class="code-comment">//    → 270s of unnecessary early refresh!</span></pre>
+                        </div>
+                        <p>Doesn't scale with different token lifetimes</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="problem-box">
+                        <div class="problem-title">3. No Concurrency Protection</div>
+                        <div class="code-block" style="margin: 8px 0;">
+<pre><span class="code-comment">// What if timer fires during a request?</span>
+Request 1: <span class="code-function">callTool</span>() <span class="code-comment">// using token A</span>
+  Timer:   <span class="code-function">refreshTokenFlow</span>() <span class="code-comment">// gets token B</span>
+  Timer:   <span class="code-bad"><span class="code-function">client.connect</span>()</span> <span class="code-comment">// reconnects!</span>
+Request 1: <span class="code-bad">...fails? hangs?</span></pre>
+                        </div>
+                        <p>Race condition between requests and refresh</p>
+                    </div>
+
+                    <div class="problem-box">
+                        <div class="problem-title">4. No Token Validity Check</div>
+                        <p>Timer fires → refresh happens, <strong>even if token is still valid</strong></p>
+                        <p style="margin-top: 5px;">No way to skip unnecessary refreshes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+            <h3 style="text-align: center;">Solution: Separate authentication into its own class with proper guards</h3>
+        </div>
+
+      <!-- Slide 13: V3 Architecture Overview -->
+<div class="slide">
+    <div class="version-badge v3">VERSION 2</div>
+    <div class="slide-header">
+        <h2>Final Solution: Separated Architecture</h2>
+        <p class="subtitle">Two classes with clear responsibilities</p>
+    </div>
+
+    <div class="timeline">
+        <div class="timeline-item initial">
+            <div class="timeline-label">Initial</div>
+            <div class="timeline-desc">No Auth</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-item v1">
+            <div class="timeline-label">Version 1</div>
+            <div class="timeline-desc">Monolithic</div>
+        </div>
+        <div class="timeline-arrow">→</div>
+        <div class="timeline-item v3">
+            <div class="timeline-label">Version 2</div>
+            <div class="timeline-desc">Separated</div>
+        </div>
+    </div>
+
+    <!-- Interface definition -->
+    <div class="code-block" style="margin: 15px 0; padding: 10px;">
+<pre><span class="code-keyword">interface</span> <span class="code-type">TokenResponse</span> {
+  access_token: <span class="code-type">string</span>;
+  refresh_token?: <span class="code-type">string</span>;
+  expires_in: <span class="code-type">number</span>;
+}</pre>
+    </div>
+
+    <div class="two-column">
+        <div>
             <div class="interface-box">
-                <div class="interface-title">class MCPClient</div>
-                <div class="interface-method">constructor(url: string, bearerToken?: string)</div>
-                <div class="interface-method">static async connect(url: string): Promise&lt;MCPClient&gt;</div>
+                <div class="interface-title">AuthenticationManager</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 5px 0;">Fields:</div>
+                <div class="interface-method private">private bearerToken: string | null</div>
+                <div class="interface-method private">private refreshToken: string | null</div>
+                <div class="interface-method private">private tokenExpiresAt: number | null</div>
+                <div class="interface-method private">private refreshTimer: NodeJS.Timeout | null</div>
+                <div class="interface-method private" style="background: #fff8e6; border-left-color: #f39c12;">private tokenPromise: Promise&lt;void&gt; | null  ← Guard!</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 8px 0 5px 0;">Public Methods:</div>
+                <div class="interface-method new">async getBearerToken(): Promise&lt;string&gt;</div>
+                <div class="interface-method new">async ensureAuthenticated(): Promise&lt;void&gt;</div>
+                <div class="interface-method">stopAutoRefresh(): void</div>
+                <div class="interface-method">dispose(): void</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 8px 0 5px 0;">Private Methods:</div>
+                <div class="interface-method private">private async authenticate()</div>
+                <div class="interface-method private">private async refreshTokenFlow()</div>
+                <div class="interface-method private">private setTokenData(tokenData)</div>
+                <div class="interface-method private">private startAutoRefresh()</div>
+                <div class="interface-method private">private isTokenExpiringSoon(): boolean</div>
+            </div>
+            <p style="text-align: center; color: #27ae60; font-weight: 600; margin-top: 8px;">Handles ALL authentication</p>
+        </div>
+        <div>
+            <div class="interface-box">
+                <div class="interface-title">MCPClient</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 5px 0;">Fields:</div>
+                <div class="interface-method private">private readonly url: string</div>
+                <div class="interface-method private">private transport?: StreamableHTTPClientTransport</div>
+                <div class="interface-method private">private client?: Client</div>
+                <div class="interface-method private">private authManager: AuthenticationManager</div>
+                <div class="interface-method private" style="background: #fff8e6; border-left-color: #f39c12;">private currentToken: string | null  ← For comparison</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 8px 0 5px 0;">Public Methods:</div>
+                <div class="interface-method">static async connect(url?): Promise&lt;MCPClient&gt;</div>
                 <div class="interface-method">async getBestHint(...): Promise&lt;BestHintResponse&gt;</div>
                 <div class="interface-method">async getSuccessRate(...): Promise&lt;SuccessRateResponse&gt;</div>
-                <div class="interface-method">private async refreshToken(): Promise&lt;void&gt;</div>
-                <div class="interface-method">private static async exchangeForTokens(): Promise&lt;string&gt;</div>
+                <div class="interface-method">async dispose(): Promise&lt;void&gt;</div>
+                
+                <div style="font-size: 0.75em; color: #7f8c8d; margin: 8px 0 5px 0;">Private Methods:</div>
+                <div class="interface-method private">private async connectTransport()</div>
+                <div class="interface-method private">private async reconnectWithNewToken(token)</div>
+                <div class="interface-method private">private async request(...)</div>
+                <div class="interface-method private">private isUnauthorized(result): boolean</div>
+            </div>
+            <p style="text-align: center; color: #3498db; font-weight: 600; margin-top: 8px;">Handles MCP protocol ONLY</p>
+        </div>
+    </div>
+
+    <div class="solution-box" style="margin-top: 12px; padding: 10px;">
+        <div class="solution-title">Key Design Decision: Polling Pattern</div>
+        <p>MCPClient <strong>pulls</strong> token from AuthManager before each request, instead of AuthManager <strong>pushing</strong> via callbacks</p>
+        <p style="margin-top: 5px;">→ No circular dependency, no callback complexity, simpler testing</p>
+    </div>
+</div>
+
+        <!-- Slide 14: V3 AuthenticationManager Deep Dive -->
+        <div class="slide">
+            <div class="version-badge v3">VERSION 3</div>
+            <div class="slide-header">
+                <h2>AuthenticationManager: The Core</h2>
+                <p class="subtitle">authentication-manager.ts</p>
             </div>
 
-            <h3>Key Implementation Details</h3>
+            <h3>Promise Guard Pattern</h3>
             <div class="code-block">
-<pre>class MCPClient {
-  private token?: string;
-  
-  public static async connect(url: string) {
-    const token = await MCPClient.exchangeForTokens();
-    const client = new MCPClient(url, token);
+<pre><span class="code-keyword">export class</span> <span class="code-type">AuthenticationManager</span> {
+  <span class="code-keyword">private</span> bearerToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> refreshToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> tokenExpiresAt: <span class="code-type">number</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
+  <span class="code-good"><span class="code-keyword">private</span> tokenPromise: <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;</span>  <span class="code-comment">// ← The guard!</span>
+
+  <span class="code-keyword">public async</span> <span class="code-function">ensureAuthenticated</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; {
+    <span class="code-comment">// 1. If auth already in progress, wait for it</span>
+    <span class="code-good"><span class="code-keyword">if</span> (<span class="code-keyword">this</span>.tokenPromise) {
+      <span class="code-keyword">return this</span>.tokenPromise;
+    }</span>
     
-    <span class="highlight-bad">// Fixed 50-second refresh interval
-    setInterval(() => {
-      client.refreshToken().catch(console.error);
-    }, 50_000);</span>
+    <span class="code-comment">// 2. If token valid, skip auth entirely</span>
+    <span class="code-good"><span class="code-keyword">if</span> (<span class="code-keyword">this</span>.bearerToken && !<span class="code-keyword">this</span>.<span class="code-function">isTokenExpiringSoon</span>()) {
+      <span class="code-keyword">return</span>;
+    }</span>
     
-    return client;
+    <span class="code-comment">// 3. Need auth - create guarded promise</span>
+    <span class="code-keyword">if</span> (!<span class="code-keyword">this</span>.refreshToken || <span class="code-keyword">this</span>.isLocal) {
+      <span class="code-good"><span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">this</span>.<span class="code-function">authenticate</span>()
+        .<span class="code-function">finally</span>(() => { <span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">null</span>; });</span>
+      <span class="code-keyword">return this</span>.tokenPromise;
+    }
+    
+    <span class="code-comment">// 4. Try refresh, fallback to full auth</span>
+    <span class="code-good"><span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">this</span>.<span class="code-function">refreshTokenFlow</span>()
+      .<span class="code-function">catch</span>(() => <span class="code-keyword">this</span>.<span class="code-function">authenticate</span>())
+      .<span class="code-function">finally</span>(() => { <span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">null</span>; });</span>
+    
+    <span class="code-keyword">return this</span>.tokenPromise;
   }
+}</pre>
+            </div>
+
+            <div class="two-column" style="margin-top: 15px;">
+                <div>
+                    <div class="solution-box">
+                        <div class="solution-title">Why This Works</div>
+                        <ul>
+                            <li><strong>tokenPromise</strong> ensures only ONE auth runs</li>
+                            <li>All concurrent callers await same promise</li>
+                            <li>finally() clears guard when done</li>
+                            <li>No external locking library needed</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-box">
+                        <div class="info-title">Token Validity Check</div>
+                        <div class="code-block" style="margin-top: 8px;">
+<pre><span class="code-keyword">private</span> <span class="code-function">isTokenExpiringSoon</span>(): <span class="code-type">boolean</span> {
+  <span class="code-keyword">if</span> (!<span class="code-keyword">this</span>.tokenExpiresAt) <span class="code-keyword">return true</span>;
+  <span class="code-keyword">return</span> Date.<span class="code-function">now</span>() >= <span class="code-keyword">this</span>.tokenExpiresAt;
+}</pre>
+                        </div>
+                        <p style="margin-top: 5px;">Skips auth if token still valid → fewer network calls</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: V3 Smart Refresh -->
+        <div class="slide">
+            <div class="version-badge v3">VERSION 3</div>
+            <div class="slide-header">
+                <h2>Smart Token Refresh Strategy</h2>
+                <p class="subtitle">70% ratio vs fixed buffer</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>V1: Fixed Buffer</h3>
+                    <div class="code-block">
+<pre><span class="code-bad"><span class="code-keyword">const</span> TOKEN_EXPIRY_BUFFER_MS = <span class="code-number">30000</span>;</span>
+
+<span class="code-comment">// Token lifetime: 60s</span>
+<span class="code-comment">// Refresh at: 60 - 30 = 30s ✓</span>
+
+<span class="code-comment">// Token lifetime: 300s</span>
+<span class="code-comment">// Refresh at: 300 - 30 = 270s</span>
+<span class="code-comment">// → Only 10% buffer! Risk of expiry</span>
+
+<span class="code-comment">// Token lifetime: 20s</span>
+<span class="code-comment">// Refresh at: 20 - 30 = -10s</span>
+<span class="code-comment">// → Negative! Immediate refresh loop</span></pre>
+                    </div>
+                </div>
+                <div>
+                    <h3>V3: Percentage Ratio</h3>
+                    <div class="code-block">
+<pre><span class="code-good"><span class="code-keyword">const</span> TOKEN_EXPIRY_RATIO = <span class="code-number">0.7</span>;</span>
+
+<span class="code-comment">// Token lifetime: 60s</span>
+<span class="code-comment">// Refresh at: 60 × 0.7 = 42s ✓</span>
+
+<span class="code-comment">// Token lifetime: 300s</span>
+<span class="code-comment">// Refresh at: 300 × 0.7 = 210s ✓</span>
+<span class="code-comment">// → 30% buffer (90s) - safe!</span>
+
+<span class="code-comment">// Token lifetime: 20s</span>
+<span class="code-comment">// Refresh at: 20 × 0.7 = 14s ✓</span>
+<span class="code-comment">// → 30% buffer (6s) - still works!</span></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">Implementation</h3>
+            <div class="code-block">
+<pre><span class="code-keyword">private</span> <span class="code-function">setTokenData</span>(tokenData: <span class="code-type">TokenResponse</span>): <span class="code-type">void</span> {
+  <span class="code-keyword">this</span>.bearerToken = tokenData.access_token;
+  <span class="code-keyword">this</span>.refreshToken = tokenData.refresh_token || <span class="code-keyword">this</span>.refreshToken;
   
-  <span class="highlight-bad">private async refreshToken(): Promise&lt;void&gt; {
-    const newToken = await MCPClient.exchangeForTokens();
-    this.token = newToken;
-    // Recreate transport with new token
-  }</span>
+  <span class="code-comment">// Schedule refresh at 70% of lifetime</span>
+  <span class="code-good"><span class="code-keyword">this</span>.tokenExpiresAt = Date.<span class="code-function">now</span>() + tokenData.expires_in * <span class="code-number">1000</span> * TOKEN_EXPIRY_RATIO;</span>
+  
+  <span class="code-keyword">this</span>.<span class="code-function">startAutoRefresh</span>();
 }</pre>
             </div>
 
-            <h3>Characteristics</h3>
-            <ul>
-                <li>✅ Simple - everything in one place</li>
-                <li>✅ Works for basic use cases</li>
-                <li>❌ God object - handles MCP protocol AND authentication</li>
-                <li>❌ Fixed 50s refresh regardless of token lifetime</li>
-                <li>❌ No refresh token - always uses password flow</li>
-                <li>❌ setInterval never cleaned up (memory leak)</li>
-            </ul>
+            <div class="solution-box" style="margin-top: 15px;">
+                <div class="solution-title">Result</div>
+                <p>Works correctly with ANY token lifetime - 10 seconds or 10 hours. Always maintains 30% safety buffer.</p>
+            </div>
         </div>
 
-        <!-- Slide 4: TRANSITION 1→2 -->
+        <!-- Slide 16: V3 MCPClient -->
         <div class="slide">
-            <div class="version-badge transition">TRANSITION 1 → 2</div>
+            <div class="version-badge v3">VERSION 3</div>
             <div class="slide-header">
-                <h2>Why Move from Version 1 to Version 2?</h2>
+                <h2>MCPClient: Token Polling Pattern</h2>
+                <p class="subtitle">mcp-client.model.ts</p>
             </div>
 
-            <div class="problem-box">
-                <div class="problem-title">Problem 1: God Object Anti-Pattern</div>
-                <p><strong>Issue:</strong> MCPClient responsible for both MCP protocol AND authentication</p>
-                <p><strong>Impact:</strong> Hard to test, hard to reuse auth logic, unclear responsibilities</p>
-            </div>
-
-            <div class="problem-box">
-                <div class="problem-title">Problem 2: Inefficient Fixed Interval</div>
-                <p><strong>Issue:</strong> Refreshes every 50s regardless of actual token expiry (might be 300s!)</p>
-                <p><strong>Impact:</strong> Wasted network calls, or token expires too early (if lifetime &lt; 50s)</p>
-            </div>
-
-            <div class="problem-box">
-                <div class="problem-title">Problem 3: No Refresh Token</div>
-                <p><strong>Issue:</strong> Always uses password grant - less efficient, less secure</p>
-                <p><strong>Impact:</strong> More load on OAuth server, no token rotation benefits</p>
-            </div>
-
-            <div class="problem-box">
-                <div class="problem-title">Problem 4: Hidden State</div>
-                <p><strong>Issue:</strong> Token management buried inside MCPClient</p>
-                <p><strong>Impact:</strong> Can't inspect auth state, can't test auth in isolation</p>
-            </div>
-
-            <div class="arrow-down">↓</div>
-            <h3 style="text-align: center;">Solution: Extract Authentication to Separate Class</h3>
-        </div>
-
-        <!-- Slide 5: VERSION 2 - After Separation -->
-        <div class="slide">
-            <div class="version-badge v2">VERSION 2</div>
-            <div class="slide-header">
-                <h2>Version 2: After Class Separation</h2>
-            </div>
-
-            <h3>Architecture: Two Separate Classes</h3>
-            <div class="two-column">
-                <div>
-                    <div class="interface-box">
-                        <div class="interface-title">class AuthenticationManager</div>
-                        <div class="interface-method new">constructor(url, realm, user, pass, isLocal, onTokenRefresh)</div>
-                        <div class="interface-method new">public async authenticate()</div>
-                        <div class="interface-method new">public getBearerToken(): string | null</div>
-                        <div class="interface-method new">public async waitForRefresh()</div>
-                        <div class="interface-method new">public startAutoRefresh()</div>
-                        <div class="interface-method new">public stopAutoRefresh()</div>
-                        <div class="interface-method new">private async refreshTokenFlow()</div>
-                    </div>
-                </div>
-                <div>
-                    <div class="interface-box">
-                        <div class="interface-title">class MCPClient</div>
-                        <div class="interface-method">constructor(url, authManager)</div>
-                        <div class="interface-method">static async connect(url): Promise&lt;MCPClient&gt;</div>
-                        <div class="interface-method">async getBestHint(...)</div>
-                        <div class="interface-method">async getSuccessRate(...)</div>
-                        <div class="interface-method">private async initialize()</div>
-                        <div class="interface-method">private async reconnectWithNewToken(token)</div>
-                    </div>
-                </div>
-            </div>
-
-            <h3>Key Implementation (Version 2)</h3>
             <div class="code-block">
-<pre>// Circular dependency via callback
-const authManager = new AuthenticationManager(
-  url, realm, user, pass, isLocal,
-  <span class="highlight-bad">async (token: string) => {
-    await mcpClient.reconnectWithNewToken(token);  // ← Circular!
-  }</span>
-);
+<pre><span class="code-keyword">export class</span> <span class="code-type">MCPClient</span> {
+  <span class="code-keyword">private</span> authManager: <span class="code-type">AuthenticationManager</span>;
+  <span class="code-good"><span class="code-keyword">private</span> currentToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;</span>  <span class="code-comment">// ← Track current token</span>
 
-// MCPClient waits before each request
-async request() {
-  <span class="highlight-bad">await this.authManager.waitForRefresh();</span>  // ← Extra wait
-  const result = await this.client.callTool(...);
-}
-
-// Smart refresh timing
-this.tokenExpiresAt = Date.now() + expires_in * 1000 * 0.7;
-setTimeout(() => this.refreshTokenFlow(), timeUntilRefresh);</pre>
+  <span class="code-keyword">private async</span> <span class="code-function">request</span>&lt;T&gt;(endpoint, params, schema, retries = <span class="code-number">1</span>): <span class="code-type">Promise</span>&lt;T | <span class="code-keyword">null</span>&gt; {
+    <span class="code-keyword">if</span> (!<span class="code-keyword">this</span>.client) <span class="code-keyword">throw new</span> <span class="code-type">Error</span>(<span class="code-string">'MCP client is not connected'</span>);
+    
+    <span class="code-comment">// 1. Get current valid token from auth manager</span>
+    <span class="code-good"><span class="code-keyword">const</span> token = <span class="code-keyword">await this</span>.authManager.<span class="code-function">getBearerToken</span>();</span>
+    
+    <span class="code-comment">// 2. Only reconnect if token actually changed</span>
+    <span class="code-good"><span class="code-keyword">if</span> (token !== <span class="code-keyword">this</span>.currentToken) {
+      <span class="code-keyword">await this</span>.<span class="code-function">reconnectWithNewToken</span>(token);
+      <span class="code-keyword">this</span>.currentToken = token;
+    }</span>
+    
+    <span class="code-comment">// 3. Make the actual request</span>
+    <span class="code-keyword">const</span> result = <span class="code-keyword">await this</span>.client.<span class="code-function">callTool</span>({ name: endpoint, arguments: params });
+    
+    <span class="code-comment">// 4. Handle 401 with retry</span>
+    <span class="code-keyword">if</span> (result?.isError && <span class="code-keyword">this</span>.<span class="code-function">isUnauthorized</span>(result) && retries > <span class="code-number">0</span>) {
+      console.<span class="code-function">warn</span>(<span class="code-string">'Token expired — attempting auto-reconnect...'</span>);
+      <span class="code-keyword">return await this</span>.<span class="code-function">request</span>(endpoint, params, schema, retries - <span class="code-number">1</span>);
+    }
+    
+    <span class="code-comment">// ... rest of response handling</span>
+  }
+}</pre>
             </div>
 
-            <h3>Improvements from V1</h3>
-            <ul>
-                <li>✅ Separation of concerns - AuthManager vs MCPClient</li>
-                <li>✅ Refresh token support (not just password flow)</li>
-                <li>✅ Smart refresh timing - 70% of token lifetime</li>
-                <li>✅ Better testability - can test auth separately</li>
-                <li>⚠️ But still has problems (see next slide)...</li>
-            </ul>
+            <div class="two-column" style="margin-top: 15px;">
+                <div>
+                    <div class="solution-box">
+                        <div class="solution-title">Why Polling Works</div>
+                        <ul>
+                            <li><strong>No callbacks</strong> - MCPClient pulls when needed</li>
+                            <li><strong>No circular deps</strong> - one-way dependency</li>
+                            <li><strong>Lazy reconnect</strong> - only when token differs</li>
+                            <li><strong>Easy to test</strong> - mock getBearerToken()</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-box">
+                        <div class="info-title">Retry Logic</div>
+                        <p>If server returns 401 (edge case where token expired between check and request):</p>
+                        <ol style="margin-top: 5px;">
+                            <li>Force token refresh via ensureAuthenticated</li>
+                            <li>Retry request once with new token</li>
+                            <li>Fail if still unauthorized</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Slide 6: TRANSITION 2→3 (Problems Discovered) - FIXED VERSION -->
+        <!-- Slide 17: Code Comparison -->
         <div class="slide">
-            <div class="version-badge transition">TRANSITION 2 → 3</div>
+            <div class="version-badge compare">COMPARISON</div>
             <div class="slide-header">
-                <h2>Why Move from Version 2 to Version 3?</h2>
+                <h2>Before & After: Key Changes</h2>
             </div>
 
-            <div class="problem-box">
-                <div class="problem-title">Problem 1: Race Condition - Public Methods Exposed</div>
-                <p><strong>Issue:</strong> <code>authenticate()</code> is public and unguarded - multiple callers can invoke it simultaneously</p>
-                <div class="code-block">
-<pre>// Scenario: Token expires during concurrent requests
-Request 1: refreshTokenFlow() fails
-  → <span class="highlight-bad">catch(() => authenticate())</span>  ← Calls authenticate
-Request 2: refreshTokenFlow() fails  
-  → <span class="highlight-bad">catch(() => authenticate())</span>  ← Also calls authenticate!
-→ <span class="highlight-bad">Two authentication flows run in parallel!</span></pre>
+            <div class="three-column">
+                <div>
+                    <div class="column-header initial">Initial</div>
+                    <div class="column-content">
+                        <div class="code-block" style="font-size: 0.85em;">
+<pre><span class="code-comment">// No auth at all</span>
+<span class="code-keyword">this</span>.transport = 
+  <span class="code-keyword">new</span> <span class="code-function">StreamableHTTPClientTransport</span>(
+    <span class="code-keyword">new</span> <span class="code-function">URL</span>(<span class="code-keyword">this</span>.url)
+  );
+
+<span class="code-comment">// Direct connect</span>
+<span class="code-keyword">await</span> client.<span class="code-function">connect</span>(transport);</pre>
+                        </div>
+                    </div>
                 </div>
-                <p><strong>Impact:</strong> Duplicate OAuth calls, token conflicts, intermittent 401 errors</p>
-            </div>
+                <div>
+                    <div class="column-header v1">V1 (Monolithic)</div>
+                    <div class="column-content">
+                        <div class="code-block" style="font-size: 0.85em;">
+<pre><span class="code-comment">// Auth mixed in MCPClient</span>
+<span class="code-keyword">await this</span>.<span class="code-function">authenticateFromEnv</span>();
+headers[<span class="code-string">'Authorization'</span>] = 
+  <span class="code-string">`Bearer </span>${<span class="code-keyword">this</span>.bearerToken}<span class="code-string">`</span>;
 
-            <div class="problem-box">
-                <div class="problem-title">Problem 2: Weak Promise Guard</div>
-                <p><strong>Issue:</strong> <code>refreshPromise</code> exists but isn't used consistently - uses boolean flag instead</p>
-                <div class="code-block">
-<pre>private refreshPromise: Promise&lt;void&gt; | null = null;
-private isRefreshing = false;  <span class="highlight-bad">← Just a flag, not a real guard!</span>
-
-async refreshTokenFlow() {
-  this.isRefreshing = true;  <span class="highlight-bad">← Set flag, but promise not set here</span>
-  // ... do refresh work
-}
-
-// Meanwhile in startAutoRefresh():
-this.refreshPromise = this.refreshTokenFlow();  <span class="highlight-bad">← Promise only set here!</span></pre>
-                </div>
-                <p><strong>Impact:</strong> Multiple refresh attempts can still occur from different code paths</p>
-            </div>
-
-            <div class="problem-box">
-                <div class="problem-title">Problem 3: Unnecessary Waits on Every Request</div>
-                <p><strong>Issue:</strong> <code>waitForRefresh()</code> called before every API request, even when token is valid</p>
-                <div class="code-block">
-<pre>// In MCPClient.request():
-<span class="highlight-bad">await this.authManager.waitForRefresh();</span>  ← Blocks every request!
-const result = await this.client?.callTool(...);</pre>
-                </div>
-                <p><strong>Impact:</strong> Adds latency to every request, even when no refresh is happening</p>
-            </div>
-
-            <div class="problem-box">
-                <div class="problem-title">Problem 4: Circular Dependency via Callback</div>
-                <p><strong>Issue:</strong> AuthManager → callback → MCPClient.reconnectWithNewToken → AuthManager</p>
-                <div class="code-block">
-<pre>const authManager = new AuthenticationManager(...,
-  <span class="highlight-bad">async (token) => mcpClient.reconnectWithNewToken(token)</span>
+<span class="code-comment">// Fixed timer</span>
+<span class="code-function">setTimeout</span>(() => 
+  <span class="code-keyword">this</span>.<span class="code-function">refreshTokenFlow</span>(), 
+  timeUntilRefresh
 );</pre>
-                </div>
-                <p><strong>Impact:</strong> Hard to test in isolation, tight coupling, complex initialization order</p>
-            </div>
-
-            <div class="arrow-down">↓</div>
-            <h3 style="text-align: center;">Solution: Make Methods Private + Real Promise Guards + Token Validation + Remove Callback</h3>
-        </div>
-
-        <!-- Slide 7: VERSION 3 - Final -->
-        <div class="slide">
-            <div class="version-badge v3">VERSION 3 (FINAL)</div>
-            <div class="slide-header">
-                <h2>Version 3: Final Production-Ready Implementation</h2>
-            </div>
-
-            <h3>Final Architecture</h3>
-            <div class="two-column">
-                <div>
-                    <div class="interface-box">
-                        <div class="interface-title">class AuthenticationManager</div>
-                        <div class="interface-method new">constructor(url, realm, user, pass, isLocal)</div>
-                        <div class="interface-method">public async getBearerToken(): Promise&lt;string&gt;</div>
-                        <div class="interface-method">public async ensureAuthenticated(): Promise&lt;void&gt;</div>
-                        <div class="interface-method">public stopAutoRefresh(): void</div>
-                        <div class="interface-method">public dispose(): void</div>
-                        <div class="interface-method" style="border-left-color: #95a5a6; color: #7f8c8d;">private async authenticate()</div>
-                        <div class="interface-method" style="border-left-color: #95a5a6; color: #7f8c8d;">private async refreshTokenFlow()</div>
-                        <div class="interface-method" style="border-left-color: #95a5a6; color: #7f8c8d;">private isTokenExpiringSoon()</div>
+                        </div>
                     </div>
                 </div>
                 <div>
-                    <div class="interface-box">
-                        <div class="interface-title">class MCPClient</div>
-                        <div class="interface-method">constructor(url, authManager)</div>
-                        <div class="interface-method">static async connect(url): Promise&lt;MCPClient&gt;</div>
-                        <div class="interface-method">async getBestHint(...)</div>
-                        <div class="interface-method">async getSuccessRate(...)</div>
-                        <div class="interface-method">async dispose()</div>
-                        <div class="interface-method new" style="border-left-color: #95a5a6; color: #7f8c8d;">private currentToken: string | null</div>
-                        <div class="interface-method" style="border-left-color: #95a5a6; color: #7f8c8d;">private async request(...)</div>
-                        <div class="interface-method" style="border-left-color: #95a5a6; color: #7f8c8d;">private async reconnectWithNewToken()</div>
-                    </div>
-                </div>
-            </div>
+                    <div class="column-header v3">V3 (Separated)</div>
+                    <div class="column-content">
+                        <div class="code-block" style="font-size: 0.85em;">
+<pre><span class="code-comment">// Separate auth manager</span>
+<span class="code-keyword">const</span> token = <span class="code-keyword">await</span> 
+  authManager.<span class="code-function">getBearerToken</span>();
 
-            <h3>Critical Fixes</h3>
-            <div class="code-block">
-<pre>// 1. Protected methods
-<span class="highlight-good">private async authenticate()</span>
-<span class="highlight-good">private async refreshTokenFlow()</span>
-
-// 2. Token validity check
-ensureAuthenticated() {
-  if (tokenPromise) return tokenPromise;
-  <span class="highlight-good">if (bearerToken && !isTokenExpiringSoon()) return;</span>
-  // Only auth if needed
-}
-
-// 3. Token polling (no callback!)
-async request() {
-  <span class="highlight-good">const token = await authManager.getBearerToken();
-  if (token !== currentToken) {
-    await reconnect(token);
-    currentToken = token;
-  }</span>
+<span class="code-comment">// Reconnect only if changed</span>
+<span class="code-keyword">if</span> (token !== currentToken) {
+  <span class="code-keyword">await</span> <span class="code-function">reconnect</span>(token);
+  currentToken = token;
 }</pre>
-            </div>
-        </div>
-
-        <!-- Slide 8: Version Comparison Table -->
-        <div class="slide">
-            <div class="slide-header">
-                <h2>Version Comparison Summary</h2>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            <h3 style="margin-top: 20px;">Summary of Changes</h3>
             <table class="comparison-table">
                 <thead>
                     <tr>
-                        <th>Aspect</th>
-                        <th style="background: #e74c3c;">Version 1</th>
-                        <th style="background: #f39c12;">Version 2</th>
-                        <th style="background: #27ae60;">Version 3</th>
+                        <th style="width: 25%;">Aspect</th>
+                        <th style="width: 25%; background: #95a5a6;">Initial</th>
+                        <th style="width: 25%; background: #e74c3c;">V1</th>
+                        <th style="width: 25%; background: #27ae60;">V3</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Architecture</strong></td>
-                        <td>Monolithic (all in MCPClient)</td>
-                        <td>Separated (2 classes)</td>
-                        <td>Separated + decoupled</td>
+                        <td><strong>Files</strong></td>
+                        <td>1 (MCPClient)</td>
+                        <td>1 (MCPClient)</td>
+                        <td>2 (MCPClient + AuthManager)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auth Logic</strong></td>
+                        <td>None</td>
+                        <td>Inside MCPClient</td>
+                        <td>Separate AuthManager</td>
                     </tr>
                     <tr>
                         <td><strong>Refresh Strategy</strong></td>
-                        <td>Fixed 50s interval</td>
-                        <td>70% of token lifetime</td>
-                        <td>70% + validity check</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Token Types</strong></td>
-                        <td>Access token only</td>
-                        <td>Access + Refresh tokens</td>
-                        <td>Access + Refresh tokens</td>
+                        <td>N/A</td>
+                        <td>Fixed 30s buffer</td>
+                        <td>70% of lifetime</td>
                     </tr>
                     <tr>
                         <td><strong>Concurrency</strong></td>
+                        <td>N/A</td>
                         <td>No protection</td>
-                        <td>Partial (weak guards)</td>
-                        <td>Full (promise guards)</td>
+                        <td>Promise guard</td>
                     </tr>
                     <tr>
-                        <td><strong>Public Methods</strong></td>
-                        <td>connect, getBestHint, getSuccessRate</td>
-                        <td>+authenticate, +refreshTokenFlow, +waitForRefresh</td>
-                        <td>Reduced: only ensureAuth, getBearerToken</td>
+                        <td><strong>Token Check</strong></td>
+                        <td>N/A</td>
+                        <td>None (always refresh)</td>
+                        <td>isTokenExpiringSoon()</td>
                     </tr>
                     <tr>
-                        <td><strong>Coupling</strong></td>
-                        <td>N/A (monolithic)</td>
-                        <td>Circular (via callback)</td>
-                        <td>One-way (Client → Auth)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Testability</strong></td>
-                        <td>Low (can't isolate)</td>
-                        <td>Medium (can mock)</td>
-                        <td>High (fully isolated)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Race Conditions</strong></td>
-                        <td>Possible</td>
-                        <td>Exposed during testing!</td>
-                        <td>Zero</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Unnecessary Auth Calls</strong></td>
-                        <td>Many (fixed interval)</td>
-                        <td>Some (no validity check)</td>
-                        <td>Minimal (smart caching)</td>
+                        <td><strong>Reconnect</strong></td>
+                        <td>N/A</td>
+                        <td>Always on refresh</td>
+                        <td>Only when token changes</td>
                     </tr>
                 </tbody>
             </table>
+        </div>
 
-            <h3 style="margin-top: 30px;">Key Insight</h3>
-            <div class="solution-box">
-                <div class="solution-title">Version 2 Was Critical for Discovery</div>
-                <p>Separating into classes (V1 → V2) immediately <strong>exposed the race conditions</strong> that were hidden in monolithic code. This made V2 → V3 fixes obvious and testable.</p>
+        <!-- Slide 18: Race Condition Fix -->
+        <div class="slide">
+            <div class="version-badge v3">DEEP DIVE</div>
+            <div class="slide-header">
+                <h2>How the Promise Guard Prevents Race Conditions</h2>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3 style="color: #e74c3c;">V1: The Problem</h3>
+                    <div class="code-block">
+<pre><span class="code-comment">// 50 concurrent requests hit the server</span>
+<span class="code-comment">// Token expires during processing</span>
+
+Request 1:  <span class="code-function">refreshTokenFlow</span>()  <span class="code-comment">→ gets Token B</span>
+Request 2:  <span class="code-function">refreshTokenFlow</span>()  <span class="code-comment">→ gets Token C</span>
+Request 3:  <span class="code-function">refreshTokenFlow</span>()  <span class="code-comment">→ gets Token D</span>
+  ...
+Request 50: <span class="code-function">refreshTokenFlow</span>()  <span class="code-comment">→ gets Token Z</span>
+
+<span class="code-bad">→ 50 OAuth calls to Keycloak!
+→ Token constantly changing
+→ Requests fail with wrong token</span></pre>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #27ae60;">V3: The Solution</h3>
+                    <div class="code-block">
+<pre><span class="code-comment">// Same 50 concurrent requests</span>
+
+Request 1:  <span class="code-function">ensureAuthenticated</span>()
+            <span class="code-good">→ tokenPromise = authenticate()</span>
+            
+Request 2:  <span class="code-function">ensureAuthenticated</span>()
+            <span class="code-good">→ return tokenPromise</span> <span class="code-comment">// waits!</span>
+            
+Request 3-50: <span class="code-good">all return same tokenPromise</span>
+
+<span class="code-comment">// authenticate() completes</span>
+<span class="code-good">→ 1 OAuth call total
+→ All 50 requests get same token
+→ All succeed</span></pre>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 20px;">The Guard Pattern</h3>
+            <div class="code-block">
+<pre><span class="code-keyword">public async</span> <span class="code-function">ensureAuthenticated</span>(): <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; {
+  <span class="code-comment">// Guard: If auth in progress, ALL callers await the SAME promise</span>
+  <span class="code-good"><span class="code-keyword">if</span> (<span class="code-keyword">this</span>.tokenPromise) {
+    <span class="code-keyword">return this</span>.tokenPromise;  <span class="code-comment">// ← This is the magic line</span>
+  }</span>
+  
+  <span class="code-comment">// Only first caller creates the promise</span>
+  <span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">this</span>.<span class="code-function">authenticate</span>()
+    .<span class="code-function">finally</span>(() => { <span class="code-keyword">this</span>.tokenPromise = <span class="code-keyword">null</span>; });  <span class="code-comment">// ← Cleanup after done</span>
+    
+  <span class="code-keyword">return this</span>.tokenPromise;
+}</pre>
             </div>
         </div>
 
-        <!-- Slide 9: Results -->
+        <!-- Slide 19: Results -->
         <div class="slide">
-            <div class="version-badge v3">VERSION 3 RESULTS</div>
+            <div class="version-badge v3">RESULTS</div>
             <div class="slide-header">
-                <h2>Final Results & Validation</h2>
+                <h2>Final Results & Metrics</h2>
             </div>
 
             <div class="metrics-row">
@@ -738,68 +1434,58 @@ async request() {
                     <div class="metric-label">Race Conditions</div>
                 </div>
                 <div class="metric">
+                    <div class="metric-value">-90%</div>
+                    <div class="metric-label">OAuth Calls</div>
+                </div>
+                <div class="metric">
                     <div class="metric-value">100%</div>
                     <div class="metric-label">Thread Safe</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-value">-60%</div>
-                    <div class="metric-label">Auth Calls</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">50+</div>
-                    <div class="metric-label">Tests</div>
+                    <div class="metric-value">2</div>
+                    <div class="metric-label">Clean Classes</div>
                 </div>
             </div>
 
-            <h3>Test Coverage</h3>
-            <ul>
-                <li><strong>Race Condition Tests:</strong> 50 concurrent requests → verified single auth call</li>
-                <li><strong>Auto Refresh Tests:</strong> 10-minute stability test with timer-based refresh</li>
-                <li><strong>Token Caching:</strong> Verified no unnecessary auth when token valid</li>
-                <li><strong>Integration Tests:</strong> All tests run against real OAuth2 server (no mocks)</li>
-                <li><strong>Stress Tests:</strong> 100+ requests in 30 seconds - zero failures</li>
-            </ul>
+            <div class="two-column" style="margin-top: 25px;">
+                <div>
+                    <div class="solution-box">
+                        <div class="solution-title">Problems Solved</div>
+                        <ul>
+                            <li>✓ <strong>God object</strong> → Separated concerns</li>
+                            <li>✓ <strong>Fixed buffer</strong> → 70% ratio</li>
+                            <li>✓ <strong>Race conditions</strong> → Promise guard</li>
+                            <li>✓ <strong>Wasted calls</strong> → Token validity check</li>
+                            <li>✓ <strong>Always reconnect</strong> → Only when token changes</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-box">
+                        <div class="info-title">Test Results</div>
+                        <ul>
+                            <li><strong>50 concurrent requests</strong> → 1 auth call</li>
+                            <li><strong>10-minute stability test</strong> → Zero failures</li>
+                            <li><strong>Token refresh</strong> → Seamless, no dropped requests</li>
+                            <li><strong>All tests</strong> run against real Keycloak (no mocks)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-            <h3 style="margin-top: 25px;">Measured Improvements</h3>
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Version 1</th>
-                        <th>Version 3</th>
-                        <th>Improvement</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Auth calls per 100 requests</td>
-                        <td>~15-20</td>
-                        <td>~1-2</td>
-                        <td><strong>-90%</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Race condition failures</td>
-                        <td>Intermittent</td>
-                        <td>0</td>
-                        <td><strong>100% fixed</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Memory leaks</td>
-                        <td>setInterval leak</td>
-                        <td>Proper cleanup</td>
-                        <td><strong>Fixed</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Code complexity (cyclomatic)</td>
-                        <td>High</td>
-                        <td>-40%</td>
-                        <td><strong>Simpler</strong></td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="solution-box" style="margin-top: 20px;">
+                <div class="solution-title">Key Takeaways</div>
+                <ul>
+                    <li><strong>Separation of concerns</strong> makes problems visible and testable</li>
+                    <li><strong>Promise guards</strong> are simpler than external locking libraries</li>
+                    <li><strong>Pull > Push</strong> - polling avoids circular dependencies</li>
+                    <li><strong>Validate before acting</strong> - check token validity to skip unnecessary work</li>
+                </ul>
+            </div>
         </div>
 
-        <!-- Slide 10: Key Takeaways -->
+    
+        <!-- Slide 20: Key Takeaways -->
         <div class="slide">
             <div class="slide-header">
                 <h2>Key Takeaways</h2>
@@ -831,7 +1517,7 @@ async request() {
             </div>
         </div>
 
-        <!-- Slide 11: Questions -->
+        <!-- Slide 20: Questions -->
         <div class="slide title-slide">
             <h1>Questions?</h1>
             <p style="font-size: 1.2em; margin-top: 40px; color: #7f8c8d;">Full code, tests, and detailed documentation available</p>
@@ -839,7 +1525,7 @@ async request() {
     </div>
 
     <div class="slide-counter">
-        <span id="current">1</span> / <span id="total">11</span>
+        <span id="current">1</span> / <span id="total">20</span>
     </div>
 
     <div class="navigation">
