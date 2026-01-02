@@ -1,11 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const Navigation = () => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false); 
+
   const links = [
     { href: '/', label: 'Home' },
     { href: '/mcp-presentation', label: 'MCP Presentation' },
@@ -13,6 +15,18 @@ const Navigation = () => {
     { href: '/root-cause-ai', label: 'Root-Cause AI Demo' },
   ];
 
+useEffect(() => {
+  const checkFullscreen = () => {
+    const chromeHeight = window.outerHeight - window.innerHeight;
+    const isFs = chromeHeight < 50 && window.innerHeight >= screen.height - 50;
+    setIsFullscreen(isFs);
+  };
+
+  window.addEventListener('resize', checkFullscreen);
+  return () => window.removeEventListener('resize', checkFullscreen);
+}, []);
+
+  if (isFullscreen) return null;
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
