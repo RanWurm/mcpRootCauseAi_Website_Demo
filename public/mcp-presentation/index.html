@@ -457,6 +457,60 @@
         ol {
             margin: 6px 0 6px 25px;
         }
+        .version-badge.rootcause { background: #e74c3c; }
+
+/* Root-Cause AI specific styles */
+.rootcause-title {
+    background: linear-gradient(135deg, #0066cc 0%, #00c9c9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.agent-card {
+    background: #f8f9fa;
+    border: 2px solid #0066cc;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.agent-name {
+    font-weight: 700;
+    color: #0066cc;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.telegram-mock {
+    background: #e5ddd5;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 20px auto;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.telegram-message {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.telegram-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.telegram-btn {
+    background: #0088cc;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9em;
+}
 
     </style>
 </head>
@@ -501,7 +555,7 @@
         </div>
 
 
-        <!-- Slide 4: MTA -->
+        <!-- Slide 3: MTA -->
         <div class="slide">
             <div class="version-badge context">CONTEXT</div>
             <div class="slide-header">
@@ -546,7 +600,7 @@
             </div>
         </div>
 
-        <!-- Slide 5: Konveyor AI (KAI) -->
+        <!-- Slide 4: Konveyor AI (KAI) -->
         <div class="slide">
             <div class="version-badge context">CONTEXT</div>
             <div class="slide-header">
@@ -590,7 +644,7 @@
 
 
    
-        <!-- Slide 6: KAI Architecture Deep Dive -->
+        <!-- Slide 5: KAI Architecture Deep Dive -->
         <div class="slide">
             <div class="version-badge context">ARCHITECTURE</div>
             <div class="slide-header">
@@ -656,7 +710,7 @@
 
      <!-- PART 2: THE ASSIGNMENT & DEEP DIVE -->
 
-        <!-- Slide 7: The Assignment -->
+        <!-- Slide 6: The Assignment -->
         <div class="slide">
             <div class="version-badge context">THE ASSIGNMENT</div>
             <div class="slide-header">
@@ -691,7 +745,7 @@
             </div>
         </div>
 
-<!-- Slide 9: Initial Challenges -->
+<!-- Slide 7: Initial Challenges -->
         <div class="slide">
             <div class="version-badge context">CHALLENGES</div>
             <div class="slide-header">
@@ -785,7 +839,7 @@
             </div>
         </div>
 
-        <!-- Slide 10: The Research Phase -->
+        <!-- Slide 9: The Research Phase -->
         <div class="slide">
             <div class="version-badge context">RESEARCH</div>
             <div class="slide-header">
@@ -822,7 +876,7 @@
                 <p>Solution Server uses <strong>Keycloak OAuth2</strong> for authentication (not simple JWT as expected)</p>
                 <p style="margin-top: 10px;">→ Required learning Keycloak integration and OAuth2 refresh token flows</p>
             </div>
-        </div><!-- Slide 11: V1 Implementation -->
+        </div><!-- Slide 10: V1 Implementation -->
 <div class="slide">
     <div class="version-badge v1">VERSION 1</div>
     <div class="slide-header">
@@ -899,7 +953,7 @@
 </div>
 
 
-<!-- Slide 13: V3 Architecture Overview -->
+<!-- Slide 11: V3 Architecture Overview -->
 <div class="slide">
     <div class="version-badge v3">VERSION 2</div>
     <div class="slide-header">
@@ -996,7 +1050,7 @@
 
 
 
-        <!-- Slide 15: V3 Smart Refresh -->
+        <!-- Slide 12: V3 Smart Refresh -->
         <div class="slide">
             <div class="version-badge v3">VERSION 2</div>
             <div class="slide-header">
@@ -1131,7 +1185,7 @@
         </div>
     </div>
 
-        <!-- Slide 14: V3 AuthenticationManager Deep Dive -->
+        <!-- Slide 13: V3 AuthenticationManager Deep Dive -->
         <div class="slide">
             <div class="version-badge v3">VERSION 2</div>
             <div class="slide-header">
@@ -1202,7 +1256,7 @@
             </div>
         </div>
 
-        <!-- Slide 18: Race Condition Fix -->
+        <!-- Slide 14: Race Condition Fix -->
         <div class="slide">
             <div class="version-badge v3">DEEP DIVE</div>
             <div class="slide-header">
@@ -1264,74 +1318,8 @@ Request 3-50: <span class="code-good">all return same tokenPromise</span>
 }</pre>
             </div>
         </div>
+        <!-- Slide 15: Code Comparison -->
 
-
-        <!-- Slide 16: V3 MCPClient -->
-        <!-- <div class="slide">
-            <div class="version-badge v3">VERSION 2</div>
-            <div class="slide-header">
-                <h2>MCPClient: Token Polling Pattern</h2>
-                <p class="subtitle">mcp-client.model.ts</p>
-            </div>
-
-            <div class="code-block">
-<pre><span class="code-keyword">export class</span> <span class="code-type">MCPClient</span> {
-  <span class="code-keyword">private</span> authManager: <span class="code-type">AuthenticationManager</span>;
-  <span class="code-good"><span class="code-keyword">private</span> currentToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;</span>  <span class="code-comment">// ← Track current token</span>
-
-  <span class="code-keyword">private async</span> <span class="code-function">request</span>&lt;T&gt;(endpoint, params, schema, retries = <span class="code-number">1</span>): <span class="code-type">Promise</span>&lt;T | <span class="code-keyword">null</span>&gt; {
-    <span class="code-keyword">if</span> (!<span class="code-keyword">this</span>.client) <span class="code-keyword">throw new</span> <span class="code-type">Error</span>(<span class="code-string">'MCP client is not connected'</span>);
-    
-    <span class="code-comment">// 1. Get current valid token from auth manager</span>
-    <span class="code-good"><span class="code-keyword">const</span> token = <span class="code-keyword">await this</span>.authManager.<span class="code-function">getBearerToken</span>();</span>
-    
-    <span class="code-comment">// 2. Only reconnect if token actually changed</span>
-    <span class="code-good"><span class="code-keyword">if</span> (token !== <span class="code-keyword">this</span>.currentToken) {
-      <span class="code-keyword">await this</span>.<span class="code-function">reconnectWithNewToken</span>(token);
-      <span class="code-keyword">this</span>.currentToken = token;
-    }</span>
-    
-    <span class="code-comment">// 3. Make the actual request</span>
-    <span class="code-keyword">const</span> result = <span class="code-keyword">await this</span>.client.<span class="code-function">callTool</span>({ name: endpoint, arguments: params });
-    
-    <span class="code-comment">// 4. Handle 401 with retry</span>
-    <span class="code-keyword">if</span> (result?.isError && <span class="code-keyword">this</span>.<span class="code-function">isUnauthorized</span>(result) && retries > <span class="code-number">0</span>) {
-      console.<span class="code-function">warn</span>(<span class="code-string">'Token expired — attempting auto-reconnect...'</span>);
-      <span class="code-keyword">return await this</span>.<span class="code-function">request</span>(endpoint, params, schema, retries - <span class="code-number">1</span>);
-    }
-    
-    <span class="code-comment">// ... rest of response handling</span>
-  }
-}</pre>
-            </div>
-
-            <div class="two-column" style="margin-top: 15px;">
-                <div>
-                    <div class="solution-box">
-                        <div class="solution-title">Why Polling Works</div>
-                        <ul>
-                            <li><strong>No callbacks</strong> - MCPClient pulls when needed</li>
-                            <li><strong>No circular deps</strong> - one-way dependency</li>
-                            <li><strong>Lazy reconnect</strong> - only when token differs</li>
-                            <li><strong>Easy to test</strong> - mock getBearerToken()</li>
-                        </ul>
-                    </div>
-                </div>
-                <div>
-                    <div class="info-box">
-                        <div class="info-title">Retry Logic</div>
-                        <p>If server returns 401 (edge case where token expired between check and request):</p>
-                        <ol style="margin-top: 5px;">
-                            <li>Force token refresh via ensureAuthenticated</li>
-                            <li>Retry request once with new token</li>
-                            <li>Fail if still unauthorized</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- Slide 17: Code Comparison -->
         <div class="slide">
             <div class="version-badge compare">COMPARISON</div>
             <div class="slide-header">
@@ -1441,7 +1429,7 @@ headers[<span class="code-string">'Authorization'</span>] =
         </div>
 
         
-        <!-- Slide 19: Results -->
+        <!-- Slide 16: Results -->
         <div class="slide">
             <div class="version-badge v3">RESULTS</div>
             <div class="slide-header">
@@ -1504,11 +1492,176 @@ headers[<span class="code-string">'Authorization'</span>] =
             </div>
         </div>
 
+ <!-- Slide 17: Transition to Root-Cause AI -->
+        <div class="slide">
+            <div class="version-badge rootcause">BONUS PROJECT</div>
+            <div class="slide-header">
+                <h2>But Wait... There's More</h2>
+                <p class="subtitle">A side project born from real pain</p>
+            </div>
+
+            <div class="info-box" style="margin-top: 30px;">
+                <div class="info-title">The Context</div>
+                <p>While building the MCP authentication tests, I kept hitting the same frustrating loop:</p>
+            </div>
+
+            <div class="flow-diagram" style="margin-top: 30px;">
+                <div class="flow-box" style="background: #fff5f5; border-color: #e74c3c;">
+                    Run Tests<br/><span style="font-size: 0.8em; font-weight: normal;">~20 minutes</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box" style="background: #fff5f5; border-color: #e74c3c;">
+                    Tests Fail<br/><span style="font-size: 0.8em; font-weight: normal;">120 log lines</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box" style="background: #fff5f5; border-color: #e74c3c;">
+                    Manual Debug<br/><span style="font-size: 0.8em; font-weight: normal;">Find root cause</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box" style="background: #fff5f5; border-color: #e74c3c;">
+                    Context Switch<br/><span style="font-size: 0.8em; font-weight: normal;">Lost focus</span>
+                </div>
+            </div>
+
+            <div class="problem-box" style="margin-top: 40px;">
+                <div class="problem-title">The Problem</div>
+                <ul>
+                    <li><strong>Context Switch Penalty</strong> - By the time I dig through logs, I forgot what I was doing</li>
+                    <li><strong>Manual Forensics</strong> - Hunting through hundreds of log lines</li>
+                    <li><strong>Context Gathering</strong> - Manually collecting code snippets for AI</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 30px; text-align: center; font-size: 1.2em; color: #2c3e50;">
+                <strong>So I built a tool to solve it.</strong>
+            </p>
+        </div>
+
+        <!-- Slide 18: Root-Cause AI Solution -->
+        <div class="slide">
+            <div class="version-badge rootcause">ROOT-CAUSE AI</div>
+            <div class="slide-header">
+                <h2>Root-Cause AI</h2>
+                <p class="subtitle">AI-powered agentic log analysis + intelligent remediation</p>
+            </div>
+
+            <div class="two-column" style="align-items: start;">
+                <div>
+                    <div class="agent-card" style="margin: 8px 0; padding: 10px;">
+                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">1. ProjectRunner</div>
+                        <p style="font-size: 0.9em;">Executes tests and captures logs</p>
+                    </div>
+
+                    <div class="agent-card" style="margin: 8px 0; padding: 10px;">
+                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">2. AiTraceAgent</div>
+                        <p style="font-size: 0.9em;">Analyzes logs using Gemini AI</p>
+                    </div>
+
+                    <div class="agent-card" style="margin: 8px 0; padding: 10px;">
+                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">3. BugFixAgent</div>
+                        <p style="font-size: 0.9em;">Explores codebase, generates patches</p>
+                    </div>
+
+                    <div class="agent-card" style="margin: 8px 0; padding: 10px;">
+                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">4. TelegramManager</div>
+                        <p style="font-size: 0.9em;">Remote approval via interactive buttons</p>
+                    </div>
+
+                    <div class="solution-box" style="margin-top: 15px; padding: 10px;">
+                        <div class="solution-title" style="font-size: 0.95em;">The Real Benefit</div>
+                        <p style="font-size: 0.9em;"><strong>Eliminates "Context Switch" Penalty.</strong><br/>You come back to a solution, not a problem.</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <img src="telegram-screenshot.png" alt="Telegram Bot Screenshot" style="height: 70vh; max-height: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Architecture & Tech -->
+        <div class="slide">
+            <div class="version-badge rootcause">ARCHITECTURE</div>
+            <div class="slide-header">
+                <h2>Root-Cause AI - Technical Design</h2>
+                <p class="subtitle">Zero frameworks, direct API integration</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Multi-Agent Architecture</h3>
+                    <div class="code-block" style="font-size: 0.85em;">
+<pre><span class="code-type">RootCauseController</span>
+    ├── <span class="code-function">ProjectRunner</span>
+    │   └── run() → logs
+    │
+    ├── <span class="code-function">AiTraceAgent</span>
+    │   └── analyze(logs) → hint
+    │
+    ├── <span class="code-function">BugFixAgent</span>  <span class="code-comment">← Agentic!</span>
+    │   ├── TreeViewer
+    │   ├── FunctionExtractor
+    │   └── FileReader
+    │   └── generate() → patch
+    │
+    ├── <span class="code-function">GitManager</span>
+    │   └── commit to separate branch
+    │
+    └── <span class="code-function">TelegramManager</span>
+        └── notify + wait for user</pre>
+                    </div>
+                </div>
+                <div>
+                    <h3>Key Design Decisions</h3>
+                    <div class="info-box">
+                        <div class="info-title">Why This Architecture?</div>
+                        <ul>
+                            <li><strong>No LangChain/LangGraph</strong> - direct Gemini API calls</li>
+                            <li><strong>Tool-based agent</strong> - requests only needed context</li>
+                            <li><strong>Unified diff patches</strong> - standard format, easy to apply</li>
+                            <li><strong>Separate Git branch</strong> - safe experimentation</li>
+                        </ul>
+                    </div>
+
+                    <div class="solution-box" style="margin-top: 15px;">
+                        <div class="solution-title">Tech Stack</div>
+                        <ul>
+                            <li>Python 3.13</li>
+                            <li>Gemini API (direct)</li>
+                            <li>Telegram Bot API</li>
+                            <li>Git CLI via subprocess</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="margin-top: 20px;">
+                <div class="info-title">Current Status</div>
+                <p>Working prototype - I prepared a presentation for Red Hat leadership about potentially developing this internally. The log analysis agent is <strong>generic</strong> and can work with any log format.</p>
+            </div>
+        </div>
 
         <!-- Slide 20: Questions -->
-        <div class="slide title-slide">
+        <div class="slide title-slide" style="justify-content: center; align-items: center; text-align: center;">
             <h1>Questions?</h1>
-            <p style="font-size: 1.2em; margin-top: 40px; color: #7f8c8d;">Full code, tests, and detailed documentation available</p>
+            <p style="font-size: 1.1em; margin-top: 20px; color: #7f8c8d;">MCP Authentication + Root-Cause AI</p>
+            
+             
+            <div style="margin-top: 30px; display: flex; flex-direction: column; align-items: center;">
+                <p style="font-size: 0.95em; color: #2c3e50; margin-bottom: 15px;"><strong>Root-Cause AI Demo:</strong></p>
+                <iframe 
+                    width="560" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/FCGltwZeiic?si=Ubjj_TOMl8EOq7xv" 
+                    title="Root-Cause AI Demo" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    style="border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                </iframe>
+            </div>
+            
+            <p style="font-size: 0.9em; margin-top: 25px; color: #95a5a6;">Full code, tests, and documentation available</p>
         </div>
     </div>
 
