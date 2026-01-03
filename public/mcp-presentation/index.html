@@ -101,7 +101,7 @@
             border-radius: 6px;
             padding: 12px 15px;
             font-family: 'Fira Code', 'Consolas', monospace;
-            font-size: 0.9em;
+            font-size: 1.1em;
             line-height: 1.4;
             overflow-x: auto;
             margin: 8px 0;
@@ -178,13 +178,13 @@
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 10px;
-            font-size: 1.05em;
+            font-size: 1.2em;
             font-family: 'Courier New', monospace;
         }
 
         .interface-method {
             font-family: 'Courier New', monospace;
-            font-size: 0.78em;
+            font-size: 1.2em;
             margin: 4px 0;
             padding: 5px 8px;
             background: white;
@@ -884,7 +884,7 @@
         <p class="subtitle">Everything in one class</p>
     </div>
 
-    <div class="code-block">
+    <div class="code-block" style="font-size:1.02em;">
 <pre><span class="code-keyword">export class</span> <span class="code-type">MCPClient</span> {
   <span class="code-keyword">private</span> bearerToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
   <span class="code-keyword">private</span> refreshToken: <span class="code-type">string</span> | <span class="code-keyword">null</span> = <span class="code-keyword">null</span>;
@@ -961,22 +961,7 @@
         <p class="subtitle">Two classes with clear responsibilities</p>
     </div>
 
-    <div class="timeline">
-        <div class="timeline-item initial">
-            <div class="timeline-label">Initial</div>
-            <div class="timeline-desc">No Auth</div>
-        </div>
-        <div class="timeline-arrow">→</div>
-        <div class="timeline-item v1">
-            <div class="timeline-label">Version 1</div>
-            <div class="timeline-desc">Monolithic</div>
-        </div>
-        <div class="timeline-arrow">→</div>
-        <div class="timeline-item v3">
-            <div class="timeline-label">Version 2</div>
-            <div class="timeline-desc">Separated</div>
-        </div>
-    </div>
+
 
     <!-- Interface definition -->
     <div class="code-block" style="margin: 15px 0; padding: 10px;">
@@ -1040,16 +1025,139 @@
             <p style="text-align: center; color: #3498db; font-weight: 600; margin-top: 8px;">Handles MCP protocol ONLY</p>
         </div>
     </div>
-
-    <div class="solution-box" style="margin-top: 12px; padding: 10px;">
-        <div class="solution-title">Key Design Decision: Polling Pattern</div>
-        <p>MCPClient <strong>pulls</strong> token from AuthManager before each request, instead of AuthManager <strong>pushing</strong> via callbacks</p>
-        <p style="margin-top: 5px;">→ No circular dependency, no callback complexity, simpler testing</p>
-    </div>
 </div>  
+<!-- Slide 16: MCPClient Deep Dive -->
+        <div class="slide">
+            <div class="version-badge v3">DEEP DIVE</div>
+            <div class="slide-header">
+                <h2>MCPClient - Design Patterns</h2>
+                <p class="subtitle">Clean separation from authentication</p>
+            </div>
 
+            <div class="two-column">
+                <div>
+                    <h3>Key Fields</h3>
+                    <div class="code-block" style="font-size:1.5em;">
+<pre><span class="code-keyword">class</span> <span class="code-type">MCPClient</span> {
+  <span class="code-comment">// Connection</span>
+  <span class="code-keyword">private readonly</span> url: <span class="code-type">string</span>;
+  <span class="code-keyword">private</span> transport?: <span class="code-type">StreamableHTTPClientTransport</span>;
+  <span class="code-keyword">private</span> client?: <span class="code-type">Client</span>;
+  
+  <span class="code-comment">// <span class="code-good">Dependency Injection</span></span>
+  <span class="code-good"><span class="code-keyword">private</span> authManager: <span class="code-type">AuthenticationManager</span>;</span>
+  
+  <span class="code-comment">// <span class="code-good">Token change detection</span></span>
+  <span class="code-good"><span class="code-keyword">private</span> currentToken: <span class="code-type">string</span> | <span class="code-keyword">null</span>;</span>
+}</pre>
+                    </div>
 
+                    <h3 style="margin-top: 15px;">Key Methods Flow</h3>
+                    <div class="code-block" style="font-size: 1.05em;">
+<pre><span class="code-function">request</span>()
+  ├─ <span class="code-function">getBearerToken</span>()  <span class="code-comment">// from authManager</span>
+  ├─ <span class="code-keyword">if</span> token changed:
+  │   └─ <span class="code-function">reconnectWithNewToken</span>()
+  ├─ <span class="code-function">callTool</span>()
+  └─ <span class="code-keyword">if</span> 401 + retries:
+      └─ <span class="code-function">request</span>() <span class="code-comment">// retry once</span></pre>
+                    </div>
+                </div>
+                <div>
+                    <h3>Design Patterns</h3>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">1. Dependency Injection</div>
+                        <p style="font-size: 1em;"><code>authManager</code> injected via constructor.<br/>MCPClient doesn't know HOW auth works.</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">2. Factory Method</div>
+                        <p style="font-size: 1em;"><code>static async connect()</code><br/>Creates both AuthManager and MCPClient, handles async init.</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">3. Lazy Reconnection</div>
+                        <p style="font-size: 1em;"><code>if (token !== currentToken)</code><br/>Reconnect only when token actually changes.</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">4. Retry with Backoff</div>
+                        <p style="font-size: 1em;"><code>retries = 1</code> parameter.<br/>On 401 → retry once after token refresh.</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">5. Schema Validation</div>
+                        <p style="font-size: 1em;">Zod schemas for type-safe responses.<br/><code>schema.parse(jsonData)</code></p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+<!-- Slide 15: AuthenticationManager Deep Dive -->
+        <div class="slide">
+            <div class="version-badge v3">DEEP DIVE</div>
+            <div class="slide-header">
+                <h2>AuthenticationManager - Design Patterns</h2>
+                <p class="subtitle">Key architectural decisions</p>
+            </div>
+
+            <div class="two-column">
+                <div>
+                    <h3>Key Fields</h3>
+                    <div class="code-block" style="font-size: 1.5em;">
+<pre><span class="code-keyword">class</span> <span class="code-type">AuthenticationManager</span> {
+  <span class="code-comment">// Token state</span>
+  <span class="code-keyword">private</span> bearerToken: <span class="code-type">string</span> | <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> refreshToken: <span class="code-type">string</span> | <span class="code-keyword">null</span>;
+  <span class="code-keyword">private</span> tokenExpiresAt: <span class="code-type">number</span> | <span class="code-keyword">null</span>;
+  
+  <span class="code-comment">// Auto-refresh mechanism</span>
+  <span class="code-keyword">private</span> refreshTimer: <span class="code-type">NodeJS.Timeout</span> | <span class="code-keyword">null</span>;
+  
+  <span class="code-comment">// <span class="code-good">Concurrency guard</span></span>
+  <span class="code-good"><span class="code-keyword">private</span> tokenPromise: <span class="code-type">Promise</span>&lt;<span class="code-type">void</span>&gt; | <span class="code-keyword">null</span>;</span>
+  
+  <span class="code-comment">// Configuration (readonly)</span>
+  <span class="code-keyword">private readonly</span> baseUrl: <span class="code-type">string</span>;
+  <span class="code-keyword">private readonly</span> realm: <span class="code-type">string</span>;
+  <span class="code-keyword">private readonly</span> isLocal: <span class="code-type">boolean</span>;
+}</pre>
+                    </div>
+                </div>
+                <div>
+                    <h3>Design Patterns</h3>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">1. Promise Guard (Singleton-like)</div>
+                        <p style="font-size: 1em;"><code>tokenPromise</code> ensures only one auth operation runs at a time. All concurrent callers share the same promise.</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">2. Graceful Degradation</div>
+                        <p style="font-size: 1em;"><code>refreshTokenFlow().catch(() => authenticate())</code><br/>If refresh fails → fallback to full re-auth</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">3. Proactive Refresh</div>
+                        <p style="font-size: 1em;"><code>TOKEN_EXPIRY_RATIO = 0.7</code><br/>Refresh at 70% of lifetime, not at expiry</p>
+                    </div>
+                    
+                    <div class="info-box" style="padding: 10px; margin: 8px 0;">
+                        <div class="info-title" style="font-size: 1.15em;">4. Environment Abstraction</div>
+                        <p style="font-size: 1em;"><code>isLocal</code> flag bypasses OAuth for local dev</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="solution-box" style="margin-top: 15px; padding: 10px;">
+                <div class="solution-title" style="font-size: 1.05em;">Public API - Only 3 Methods</div>
+                <code style="font-size: 1em;">getBearerToken()</code> · <code style="font-size:1em;">ensureAuthenticated()</code> · <code style="font-size: 1em;">dispose()</code>
+                <p style="font-size: 1em; margin-top: 5px;">All complexity is internal. Consumers just call <code>getBearerToken()</code></p>
+            </div>
+        </div>
+
+        
         <!-- Slide 12: V3 Smart Refresh -->
         <div class="slide">
             <div class="version-badge v3">VERSION 2</div>
@@ -1115,7 +1223,7 @@
         </div>
 
 
-
+<!-- Slide -->
     <div class="slide">
         <div class="version-badge v3">VERSION 2</div>
         <div class="slide-header">
@@ -1501,8 +1609,8 @@ headers[<span class="code-string">'Authorization'</span>] =
             </div>
 
             <div class="info-box" style="margin-top: 30px;">
-                <div class="info-title">The Context</div>
-                <p>While building the MCP authentication tests, I kept hitting the same frustrating loop:</p>
+                <div class="info-title"style="font-size: 1.25em;">The Context</div>
+                <p style="margin-top: 30px;font-size: 1em;">While building the MCP authentication tests, I kept hitting the same frustrating loop:</p>
             </div>
 
             <div class="flow-diagram" style="margin-top: 30px;">
@@ -1523,7 +1631,7 @@ headers[<span class="code-string">'Authorization'</span>] =
                 </div>
             </div>
 
-            <div class="problem-box" style="margin-top: 40px;">
+            <div class="problem-box" style="margin-top: 40px;font-size: 1.2em;">
                 <div class="problem-title">The Problem</div>
                 <ul>
                     <li><strong>Context Switch Penalty</strong> - By the time I dig through logs, I forgot what I was doing</li>
@@ -1548,33 +1656,33 @@ headers[<span class="code-string">'Authorization'</span>] =
             <div class="two-column" style="align-items: start;">
                 <div>
                     <div class="agent-card" style="margin: 8px 0; padding: 10px;">
-                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">1. ProjectRunner</div>
-                        <p style="font-size: 0.9em;">Executes tests and captures logs</p>
+                        <div class="agent-name" style="font-size: 1.25em; margin-bottom: 5px;">1. ProjectRunner</div>
+                        <p style="font-size: 1.2em;">Executes tests and captures logs</p>
                     </div>
 
                     <div class="agent-card" style="margin: 8px 0; padding: 10px;">
-                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">2. AiTraceAgent</div>
-                        <p style="font-size: 0.9em;">Analyzes logs using Gemini AI</p>
+                        <div class="agent-name" style="font-size: 1.25em; margin-bottom: 5px;">2. AiTraceAgent</div>
+                        <p style="font-size: 1.2em;">Analyzes logs using Gemini AI</p>
                     </div>
 
                     <div class="agent-card" style="margin: 8px 0; padding: 10px;">
-                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">3. BugFixAgent</div>
-                        <p style="font-size: 0.9em;">Explores codebase, generates patches</p>
+                        <div class="agent-name" style="font-size: 1.25em; margin-bottom: 5px;">3. BugFixAgent</div>
+                        <p style="font-size: 1.2em;">Explores codebase, generates patches</p>
                     </div>
 
                     <div class="agent-card" style="margin: 8px 0; padding: 10px;">
-                        <div class="agent-name" style="font-size: 1em; margin-bottom: 5px;">4. TelegramManager</div>
-                        <p style="font-size: 0.9em;">Remote approval via interactive buttons</p>
+                        <div class="agent-name" style="font-size: 1.25em; margin-bottom: 5px;">4. TelegramManager</div>
+                        <p style="font-size: 1.2em;">Remote approval via interactive buttons</p>
                     </div>
 
                     <div class="solution-box" style="margin-top: 15px; padding: 10px;">
                         <div class="solution-title" style="font-size: 0.95em;">The Real Benefit</div>
-                        <p style="font-size: 0.9em;"><strong>Eliminates "Context Switch" Penalty.</strong><br/>You come back to a solution, not a problem.</p>
+                        <p style="font-size: 1.2em;"><strong>Eliminates "Context Switch" Penalty.</strong><br/>You come back to a solution, not a problem.</p>
                     </div>
                 </div>
 
                 <div style="text-align: center;">
-                    <img src="telegram-screenshot.png" alt="Telegram Bot Screenshot" style="height: 70vh; max-height: 600px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <img src="telegram-screenshot.png" alt="Telegram Bot Screenshot" style="height: 70vh; max-height: 850px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 </div>
             </div>
         </div>
@@ -1590,7 +1698,7 @@ headers[<span class="code-string">'Authorization'</span>] =
             <div class="two-column">
                 <div>
                     <h3>Multi-Agent Architecture</h3>
-                    <div class="code-block" style="font-size: 0.85em;">
+                    <div class="code-block" style="font-size: 1.25em;">
 <pre><span class="code-type">RootCauseController</span>
     ├── <span class="code-function">ProjectRunner</span>
     │   └── run() → logs

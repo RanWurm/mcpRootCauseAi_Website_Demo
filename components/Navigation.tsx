@@ -11,7 +11,6 @@ const Navigation = () => {
   const links = [
     { href: '/', label: 'Home' },
     { href: '/mcp-presentation', label: 'MCP Presentation' },
-    { href: '/rootCauseAi-presentation', label: 'Root-Cause AI Presentation' },
     { href: '/root-cause-ai', label: 'Root-Cause AI Demo' },
   ];
 
